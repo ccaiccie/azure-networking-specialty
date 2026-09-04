@@ -1,0 +1,64 @@
+AZURE NETWORKING SPECIALTY — DAILY INTERACTIVE STUDY REPORT INSTRUCTIONS
+Version: 1.0
+Repository source of truth: ccaiccie/azure-networking-specialty, branch main
+Publication directory: docs/
+Pages base URL: https://ccaiccie.github.io/azure-networking-specialty/
+Delivery recipients: mikewissa@yahoo.com; mwissa@osidigital.com
+Schedule: daily at 08:00 America/Los_Angeles
+
+PURPOSE
+Create a rigorous, blueprint-based Azure networking professional-development report. Do not claim that an official certification named "Azure Networking Specialty" is active. When certification alignment is relevant, describe the material as Azure networking professional development aligned to the current Microsoft Azure networking role/skills outline, and verify any certification-status claim from an official Microsoft page.
+
+PREFLIGHT — REQUIRED BEFORE RESEARCH
+1. Fetch this instruction file from main and obey it.
+2. Fetch docs/azure-study-uniqueness-ledger.json from main.
+3. Enforce a rolling 30-calendar-day blocklist. A candidate is prohibited if any primary article URL, scenario article URL, canonical URL, normalized title/topic fingerprint, feature lesson, or source-case fingerprint matches an in-window ledger entry.
+4. Record the preflight timestamp and the list of active blocked fingerprints in the validation section. Do not update the ledger until all validation and fetch-back checks pass.
+
+CONTENT REQUIREMENTS
+- Create one timestamped self-contained interactive HTML report in docs/ named:
+  Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html
+- Include exactly 12 substantive Azure target lessons. Rotate the lessons and source cases across days while preserving the 30-day blocklist.
+- Use authoritative Microsoft sources (learn.microsoft.com, microsoft.com, Azure Architecture Center) for technical claims. Cite every lesson with a primary source and a distinct scenario/case source. The primary and scenario URLs must be different and must be tracked separately.
+- Include official Microsoft/Azure-hosted figures only when their direct image URL and referring source page are verified. Do not use unverified, copied, or hotlinked third-party figures.
+- Include Mermaid teaching diagrams where they clarify topology, routing, DNS, private access, inspection, or traffic flow. Mermaid blocks must be syntactically valid.
+- Include a Sources and Uniqueness section that lists all source roles, canonical URLs, fingerprints, and the current 30-day status.
+
+TOPIC COVERAGE FOR EACH DAILY REPORT
+The 12 lessons must be Azure networking focused and collectively cover:
+1. Hybrid connectivity and architecture: Virtual WAN, hub/spoke transit, VPN Gateway, ExpressRoute, FastPath, Route Server, BGP.
+2. Core networking infrastructure: VNets, subnets, IP addressing, DNS, Standard Load Balancer, Application Gateway, Front Door/Traffic Manager as appropriate.
+3. Routing and traffic management: system routes, UDRs, BGP propagation, routing intent, effective routes, load-balancing/traffic-steering decisions.
+4. Security, monitoring, and private service access: NSGs/ASGs, Azure Firewall, WAF, DDoS Protection, Private Link/private endpoints, Azure DNS private resolution, Network Watcher/Connection Monitor.
+
+QUIZ REQUIREMENTS
+- Include exactly 50 automatically gradable single-answer questions, four choices each, with no ambiguous answer.
+- Required 50-question domain distribution:
+  * 15 Hybrid connectivity and architecture
+  * 13 Core networking infrastructure
+  * 10 Routing and traffic management
+  * 12 Security, monitoring, and private service access
+- Every question needs a correct answer, explanation, domain tag, associated lesson, and source link. Randomize option order deterministically at page load; correct-answer mapping must remain accurate.
+- Provide Check answer feedback for every question; Finish and grade control; score, percentage, domain breakdown, unanswered count, answer review, and reset control. The quiz must work without a server-side component.
+
+PUBLICATION AND VALIDATION
+1. Update docs/index.html so the latest validated report is prominent and uses the exact GitHub Pages URL:
+   https://ccaiccie.github.io/azure-networking-specialty/<filename>.html
+2. Commit all report, index, and ledger changes to main.
+3. Fetch the committed report, index, and ledger back from GitHub after committing.
+4. Validate and report all of the following:
+   - report exists at exact timestamped path and index points to that exact Pages URL
+   - exactly 12 substantive lessons
+   - exactly 50 questions and 15/13/10/12 distribution
+   - source-role separation: each lesson's primary URL differs from its scenario URL
+   - valid report quiz controls and feedback/final-grading code
+   - verified official image links; state explicitly if no verified figure is used
+   - Mermaid blocks are present and syntactically valid
+   - all 30-day uniqueness checks pass
+   - fetched ledger includes this run only after successful validation
+5. If any validation fails, do not send email and do not advance the ledger.
+
+EMAIL AFTER SUCCESS ONLY
+Use the connected Gmail account to send an HTML email to both delivery recipients.
+Subject: Azure Networking Specialty Daily Study Quiz — YYYY-MM-DD-HH-MM
+The email must include the exact GitHub Pages report link as both a clickable and visible copyable URL, the 12 short topic summaries, validation results, and the 30-day uniqueness status. Confirm Gmail reports SENT before stating that the run succeeded.
