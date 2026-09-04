@@ -1,5 +1,5 @@
 AZURE NETWORKING SPECIALTY — DAILY INTERACTIVE STUDY REPORT INSTRUCTIONS
-Version: 1.0
+Version: 1.1
 Repository source of truth: ccaiccie/azure-networking-specialty, branch main
 Publication directory: docs/
 Pages base URL: https://ccaiccie.github.io/azure-networking-specialty/
@@ -19,9 +19,26 @@ CONTENT REQUIREMENTS
 - Create one timestamped self-contained interactive HTML report in docs/ named:
   Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html
 - Include exactly 12 substantive Azure target lessons. Rotate the lessons and source cases across days while preserving the 30-day blocklist.
+- Each lesson MUST be a full, self-contained mini-article, not a short summary, outline, or bullet dump.
+- Each mini-article should normally contain roughly 700–1,200 words of substantive instructional content when the topic supports it. Do not pad with filler merely to meet length.
+- A reader should be able to learn the feature from the report without having to leave the page. Source links remain required for verification, deeper reading, and attribution.
+- Every lesson must include, when relevant to the topic:
+  * a clear introduction and why the feature matters in real Azure network designs
+  * architecture explanation, including control-plane and data-plane roles
+  * packet-flow or traffic-flow walkthrough from source to destination
+  * prerequisites, dependencies, and design assumptions
+  * implementation/configuration guidance using Azure Portal plus concrete Azure CLI, PowerShell, Bicep, or Terraform examples where appropriate
+  * routing, DNS, NAT, security, inspection, and high-availability interactions
+  * design tradeoffs, alternatives, and guidance on when to use or not use the feature
+  * documented limitations, SKUs, scale, regional, zone, gateway, protocol, or availability considerations
+  * realistic enterprise deployment scenario with enough detail to understand the design decision
+  * troubleshooting workflow with concrete verification commands, portal locations, logs, metrics, Network Watcher checks, effective routes, DNS tests, or other relevant diagnostics
+  * common failure modes and how to distinguish them
+  * exam/interview-style takeaways and a concise end-of-lesson summary
+- Avoid lessons that merely restate Microsoft documentation headings. Synthesize the source material into a coherent teaching narrative.
 - Use authoritative Microsoft sources (learn.microsoft.com, microsoft.com, Azure Architecture Center) for technical claims. Cite every lesson with a primary source and a distinct scenario/case source. The primary and scenario URLs must be different and must be tracked separately.
 - Include official Microsoft/Azure-hosted figures only when their direct image URL and referring source page are verified. Do not use unverified, copied, or hotlinked third-party figures.
-- Include Mermaid teaching diagrams where they clarify topology, routing, DNS, private access, inspection, or traffic flow. Mermaid blocks must be syntactically valid.
+- Include Mermaid teaching diagrams where they clarify topology, routing, DNS, private access, inspection, failover, or traffic flow. Mermaid blocks must be syntactically valid.
 - Include a Sources and Uniqueness section that lists all source roles, canonical URLs, fingerprints, and the current 30-day status.
 
 TOPIC COVERAGE FOR EACH DAILY REPORT
@@ -49,6 +66,8 @@ PUBLICATION AND VALIDATION
 4. Validate and report all of the following:
    - report exists at exact timestamped path and index points to that exact Pages URL
    - exactly 12 substantive lessons
+   - every lesson passes article-depth validation and is self-contained rather than a shallow summary
+   - every lesson includes architecture/design detail, an enterprise scenario, and troubleshooting/verification guidance appropriate to the topic
    - exactly 50 questions and 15/13/10/12 distribution
    - source-role separation: each lesson's primary URL differs from its scenario URL
    - valid report quiz controls and feedback/final-grading code
@@ -61,4 +80,4 @@ PUBLICATION AND VALIDATION
 EMAIL AFTER SUCCESS ONLY
 Use the connected Gmail account to send an HTML email to both delivery recipients.
 Subject: Azure Networking Specialty Daily Study Quiz — YYYY-MM-DD-HH-MM
-The email must include the exact GitHub Pages report link as both a clickable and visible copyable URL, the 12 short topic summaries, validation results, and the 30-day uniqueness status. Confirm Gmail reports SENT before stating that the run succeeded.
+The email must include the exact GitHub Pages report link as both a clickable and visible copyable URL, the 12 short topic summaries, validation results including article-depth validation, and the 30-day uniqueness status. Confirm Gmail reports SENT before stating that the run succeeded.
