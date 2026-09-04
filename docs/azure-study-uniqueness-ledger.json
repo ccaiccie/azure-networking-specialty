@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "ledger_name": "azure-networking-specialty-daily-study-uniqueness-ledger",
+  "rolling_calendar_days": 30,
+  "timezone": "America/Los_Angeles",
+  "entries": []
+}
