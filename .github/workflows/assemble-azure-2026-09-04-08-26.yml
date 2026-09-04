@@ -1,0 +1,36 @@
+name: Assemble Azure study report 2026-09-04 08-26
+
+on:
+  push:
+    paths:
+      - 'docs/.build-azure-2026-09-04-08-26/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Assemble full HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat docs/.build-azure-2026-09-04-08-26/part-*.b64 | base64 -d | gzip -d > docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-04-08-26.html
+          test -s docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-04-08-26.html
+          grep -q '<!doctype html>' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-04-08-26.html
+          grep -q 'Finish and grade' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-04-08-26.html
+          rm -rf docs/.build-azure-2026-09-04-08-26
+      - name: Commit assembled report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A docs
+          git commit -m 'Publish Azure Networking daily study report 2026-09-04 08:26'
+          git push
