@@ -94,18 +94,18 @@
         "connection-monitor-hybrid-rtt-loss-and-path-diagnostics"
       ],
       "feature_lessons": [
-        "virtual-wan-as-microsoft-managed-global-transit",
-        "expressroute-fastpath-data-path-bypass-with-gateway-control",
-        "vpn-gateway-active-active-resiliency",
-        "azure-route-server-and-managed-bgp-exchange",
-        "vnet-address-planning-and-subnet-segmentation",
-        "standard-and-gateway-load-balancer-roles",
-        "application-gateway-v2-layer-7-routing-and-waf",
-        "system-routes-udrs-bgp-propagation-and-effective-routes",
-        "global-web-traffic-front-door-versus-traffic-manager",
-        "private-endpoints-and-private-dns",
-        "azure-firewall-nsgs-and-forced-tunnel-inspection",
-        "connection-monitor-for-azure-and-hybrid-path-health"
+        "Virtual WAN as Microsoft-managed global transit",
+        "ExpressRoute FastPath: data-path bypass with gateway control",
+        "VPN Gateway active-active resiliency",
+        "Azure Route Server and managed BGP exchange",
+        "VNet address planning and subnet segmentation",
+        "Standard and Gateway Load Balancer roles",
+        "Application Gateway v2: Layer 7 routing and WAF",
+        "System routes, UDRs, BGP propagation, and effective routes",
+        "Global web traffic: Front Door versus Traffic Manager",
+        "Private Endpoints and private DNS",
+        "Azure Firewall, NSGs, and forced-tunnel inspection",
+        "Connection Monitor for Azure and hybrid path health"
       ],
       "source_case_fingerprints": [
         "vwan-hub-spoke-branch-and-vnet-transit",
