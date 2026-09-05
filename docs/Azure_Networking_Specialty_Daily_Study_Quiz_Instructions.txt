@@ -1,5 +1,5 @@
 AZURE NETWORKING SPECIALTY — DAILY INTERACTIVE STUDY REPORT INSTRUCTIONS
-Version: 1.4
+Version: 1.5
 Repository source of truth: ccaiccie/azure-networking-specialty, branch main
 Publication directory: docs/
 Pages base URL: https://ccaiccie.github.io/azure-networking-specialty/
@@ -22,6 +22,14 @@ CONTENT — HARD GATES
 - Each lesson must contain at least 700 substantive instructional words excluding headings, citations, code, quiz text, navigation, and boilerplate; target 800–1,200 when useful.
 - Desktop/regular-browser readability is the priority. Mobile-specific styling is not required.
 
+DESKTOP LAYOUT + TYPOGRAPHY — HARD GATE
+- Design for a regular desktop browser. Do not optimize for phone/mobile presentation.
+- Architecture diagrams must occupy the full available lesson/content width on their own row. Never place the primary draw.io/SVG architecture diagram in a narrow side column beside prose.
+- Put the Architecture explanatory text first, then place the full-width SVG directly below it, followed by its caption and draw.io/SVG links.
+- SVG images should use width:100% and height:auto, with no small max-width that prevents them from spanning the lesson width. The diagram may be constrained only by the report’s main desktop content width.
+- Keep typography compact and study-oriented, not presentation-sized. Recommended desktop defaults: body 14px–15px; h1 about 28px–32px; h2 about 22px–25px; h3 about 17px–19px; code/output 12.5px–14px; captions/metadata about 12px–13px.
+- Use moderate line height around 1.5–1.6 and avoid oversized padding/margins that make the report feel sparse.
+
 NON-REDUNDANCY — HARD GATE
 - Thoroughness must come from new technical detail, not repetition. Every paragraph must add a new concept, consequence, implementation detail, limitation, diagnostic technique, design comparison, or scenario insight.
 - Give each fact one primary home. Do not restate the same product facts under Why it matters, Architecture, Prerequisites, Interactions, Troubleshooting, and closing sections.
@@ -33,7 +41,7 @@ NON-REDUNDANCY — HARD GATE
 LESSON ORGANIZATION
 Required anchor sections:
 1. “Why it matters” — concise statement of the design/operational problem and the value of the feature. Do not repeat this content later.
-2. “Architecture” — topic-specific architecture, including control plane/data plane where that distinction is useful. This section MUST have the lesson’s draw.io/SVG diagram immediately adjacent to it. Mermaid may be included as a complementary view.
+2. “Architecture” — topic-specific architecture, including control plane/data plane where that distinction is useful. The Architecture text must be followed immediately by the lesson’s full-width draw.io/SVG diagram. Mermaid may be included as a complementary view.
 3. “Prerequisites and implementation” — only prerequisites not already explained, followed by real implementation. Do not repeat architecture or Why-it-matters facts here.
 4. “Verification” — commands and representative expected output/state so the learner knows what success looks like.
 5. “Troubleshooting” — commands, likely failure symptoms, and representative expected output/state for common failures.
@@ -61,6 +69,7 @@ DRAW.IO + SVG — HARD GATE
 - For every relevant lesson (normally all 12), create a colorful professional editable draw.io XML diagram under docs/images/ using modern Azure/azure2 stencil objects rather than generic boxes when an Azure construct exists.
 - The SVG exported from the draw.io source must use the same basename, remain vector, and be stored beside the draw.io file in docs/images/.
 - The Architecture section MUST embed the SVG directly in the HTML using a relative images/<file>.svg path, meaningful alt text, caption, and link to the editable draw.io source.
+- The primary architecture SVG must span the full lesson/content width on a separate row; do not use two-column architecture layouts.
 - Use correct Azure constructs/icons, meaningful VNet/subnet/region/trust-zone containers, labeled packet/control flows, BGP/IPsec/DNS/TLS/port annotations, Azure-style colors, and uncluttered connectors.
 - Keep Mermaid as a complementary representation when it genuinely helps. Draw.io/SVG is the primary architecture visual.
 - Validate after commit that every draw.io/SVG exists, SVG is valid vector markup, Azure stencil constructs are present, and every HTML image reference resolves.
@@ -75,7 +84,7 @@ QUIZ
 Exactly 50 automatically gradable single-answer questions, four choices each, no ambiguity. Distribution: 15 Hybrid connectivity and architecture; 13 Core networking infrastructure; 10 Routing and traffic management; 12 Security, monitoring, and private service access. Every question includes answer, explanation, domain, associated lesson, and source. Deterministically randomize options while preserving mapping. Include per-question Check answer, Finish/grade, score, percentage, domain breakdown, unanswered count, answer review, and reset.
 
 PRECOMMIT VALIDATION
-Before publication validate and record: 12 lessons; each >=700 substantive words; no duplicated/near-duplicated prose; no generic takeaways/summary sections; only topic-relevant optional sections; substantial implementation config in every lesson; verified CLI/Terraform syntax; Verification commands with representative expected output; Troubleshooting commands with representative failing output and interpretation; draw.io/SVG adjacent to Architecture; Mermaid when useful; distinct source pairs; 30-day uniqueness; exactly 50 questions and 15/13/10/12 distribution; functioning quiz controls. If any hard gate fails, do not publish/update index/advance ledger/email.
+Before publication validate and record: 12 lessons; each >=700 substantive words; compact desktop typography; all primary architecture SVGs full-width on their own row; no duplicated/near-duplicated prose; no generic takeaways/summary sections; only topic-relevant optional sections; substantial implementation config in every lesson; verified CLI/Terraform syntax; Verification commands with representative expected output; Troubleshooting commands with representative failing output and interpretation; draw.io/SVG adjacent to Architecture; Mermaid when useful; distinct source pairs; 30-day uniqueness; exactly 50 questions and 15/13/10/12 distribution; functioning quiz controls. If any hard gate fails, do not publish/update index/advance ledger/email.
 
 PUBLICATION + FETCH-BACK
 1. Commit report and docs/images assets to main.
