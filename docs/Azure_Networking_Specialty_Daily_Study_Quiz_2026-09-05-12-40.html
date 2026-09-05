@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Azure Networking Specialty Daily Study Quiz — 2026-09-05 12:40 PT</title>
+<style>
+:root{--bg:#eef3f8;--paper:#fff;--ink:#172b3d;--muted:#5b6d7d;--line:#ccd8e2;--azure:#0078d4;--navy:#0b3558;--good:#107c41;--bad:#a4262c;--code:#081d2f;--lab:#f3f9fd;--warn:#fff7e6}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.64 "Segoe UI",Arial,sans-serif}main{width:1220px;max-width:calc(100% - 48px);margin:28px auto 80px}header,.toc,.lesson,.quiz-shell{background:var(--paper);border:1px solid var(--line);box-shadow:0 7px 24px rgba(20,55,80,.08);margin:0 0 24px;padding:30px 36px}header{border-top:7px solid var(--azure)}h1{margin:.15em 0;font-size:2.4rem;color:var(--navy)}h2{font-size:1.72rem;color:var(--navy);margin:.2em 0 1em}h3{font-size:1.22rem;color:#075a9c;margin:1.7em 0 .55em;border-bottom:1px solid #dce7ef;padding-bottom:.32em}p{max-width:100ch}.eyebrow{text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--azure);font-size:.82rem}.note{background:#eef7fd;border-left:5px solid var(--azure);padding:14px 18px}.architecture{display:grid;grid-template-columns:1fr 1.05fr;gap:28px;align-items:start}.diagram{margin:0;background:#f8fbfd;border:1px solid #b9d6ea;padding:14px}.diagram img{width:100%;height:auto;display:block}.diagram figcaption{font-size:.9rem;color:var(--muted);margin-top:8px}.diagram-links{font-size:.86rem;margin-top:6px}.lab{background:var(--lab);border:1px solid #9acbe8;padding:18px 20px;margin:16px 0}.expected{background:#f1f8f3;border-left:4px solid var(--good);padding:12px 14px}.failure{background:#fff1f1;border-left:4px solid var(--bad);padding:12px 14px}.warning{background:var(--warn);border-left:4px solid #d98500;padding:12px 14px}pre{background:var(--code);color:#eaf6ff;padding:16px 18px;overflow:auto;line-height:1.48;border-radius:4px}pre.output{background:#f7f9fb;color:#163047;border:1px solid #cbd8e2}code{font-family:Consolas,"Courier New",monospace}a{color:#005ea8}.sources{background:#f5f7f9;border-top:1px solid var(--line);margin-top:24px;padding:13px 15px;font-size:.91rem}.toc ol{columns:2;column-gap:50px}.toc li{margin:.4em 0}.question{border:1px solid var(--line);padding:18px 20px;margin:16px 0;background:#fff}.choice{display:block;margin:8px 0;padding:7px 10px;background:#f7fafc;border:1px solid #d9e3ea}.question button,.quiz-actions button{background:var(--azure);color:#fff;border:0;padding:9px 14px;font-weight:600;cursor:pointer}.quiz-actions button.secondary{background:#596875}.feedback{min-height:1.4em;margin-top:10px;font-weight:600}.result{white-space:pre-wrap;background:#eef7f1;border:1px solid #bddac7;padding:16px;margin-top:15px}.small{font-size:.9rem;color:var(--muted)}table{width:100%;border-collapse:collapse}th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:#edf4f9}
+</style>
+</head>
+<body><main>
+<header>
+<div class="eyebrow">Azure networking professional development · focused implementation edition</div>
+<h1>Azure Networking Specialty Daily Interactive Study Report</h1>
+<p><strong>Revision:</strong> September 5, 2026 12:40 PT. This keeps today’s same twelve study topics while removing the repeated template prose. Each lesson is organized around what is actually useful for that feature: why it matters, architecture, implementation, verification, and command-driven troubleshooting.</p>
+<div class="note"><strong>Certification alignment:</strong> “Azure Networking Specialty” is the study-series label. Current alignment is Microsoft Certified: Azure Network Engineer Associate / AZ-700. Source links are retained for validation and deeper reading; the teaching material below is designed to stand on its own.</div>
+</header>
+<section class="toc"><h2>Today’s 12 topics</h2><ol>
+<li><a href="#l1">ExpressRoute Direct MACsec</a></li><li><a href="#l2">VPN Gateway custom IPsec/IKE policy</a></li><li><a href="#l3">ExpressRoute Metro</a></li><li><a href="#l4">IPsec over ExpressRoute with Virtual WAN</a></li><li><a href="#l5">VNet peering gateway transit</a></li><li><a href="#l6">Standard Load Balancer HA Ports</a></li><li><a href="#l7">Azure Public DNS DNSSEC</a></li><li><a href="#l8">Front Door Premium Private Link origins</a></li><li><a href="#l9">Azure Firewall Premium TLS inspection</a></li><li><a href="#l10">VNet Flow Logs and Traffic Analytics</a></li><li><a href="#l11">Network Watcher IP Flow Verify</a></li><li><a href="#l12">Azure Private Link Service</a></li></ol></section>
+
+<section class="lesson" id="l1"><div class="eyebrow">Lesson 1 · Hybrid connectivity</div><h2>ExpressRoute Direct MACsec: encrypting the physical handoff</h2>
+<h3>Why it matters</h3><p>ExpressRoute gives private connectivity into Microsoft’s network, but “private” is not the same as “encrypted.” When an organization owns ExpressRoute Direct ports and its security policy requires encryption on the physical customer-to-Microsoft Ethernet handoff, MACsec is the relevant control. It encrypts Ethernet frames between the customer edge and Microsoft Enterprise Edge rather than creating an IPsec overlay. That distinction matters because the failure domain, key lifecycle, and troubleshooting evidence are different from VPN Gateway or application TLS.</p><p>The operational goal is to protect each Direct link while preserving redundancy. ExpressRoute Direct presents two physical links. Treat them independently during deployment and key rotation: establish and validate MACsec on one link, leave the second as a known-good path, then change the other. A simultaneous key error on both links can remove the entire ExpressRoute path even though the Azure circuit configuration itself is unchanged.</p>
+<h3>Architecture</h3><div class="architecture"><div><p>MACsec is below BGP and Azure private peering. The customer router and Microsoft edge form the secure Layer-2 channel. BGP sessions and all routed traffic then traverse that encrypted link. Key material is represented by the Connectivity Association Key (CAK) and Connectivity Association Key Name (CKN); Azure Key Vault is used for the Microsoft-side integration described by the service. Port speed affects supported cipher choices; on higher-speed Direct ports Microsoft documents XPN cipher variants.</p><p>A useful mental model is: <strong>Key Vault and ExpressRoute port configuration are management/control concerns; the encrypted Ethernet secure channel is the forwarding mechanism; BGP is the routed control plane above it.</strong> If MACsec fails, the IP layer can disappear even though the ExpressRoute resource still shows as provisioned.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L01-expressroute-direct-macsec.svg" alt="ExpressRoute Direct MACsec Azure architecture"><figcaption>ExpressRoute Direct MACsec. The encrypted boundary is the Direct physical link, not the entire application path.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L01-expressroute-direct-macsec.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L01-expressroute-direct-macsec.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Use this only with ExpressRoute Direct, not a provider-provisioned circuit where you do not own the Microsoft-facing Direct ports. Verify the port resource, each physical link, the managed identity/Key Vault access design used for the secrets, and the cipher supported by the Direct port speed. The safest implementation sequence is inventory → Key Vault/identity readiness → configure link 1 → validate MACsec and BGP → move traffic/test → configure link 2.</p><div class="lab"><strong>Azure CLI inspection and MACsec configuration surface</strong><pre><code>az network express-route port show \
+  --resource-group &lt;rg&gt; \
+  --name &lt;expressroute-direct-port&gt; \
+  --output jsonc
+
+az network express-route port link list \
+  --resource-group &lt;rg&gt; \
+  --port-name &lt;expressroute-direct-port&gt; \
+  --output table
+
+# Review the current supported MACsec parameters before changing a link.
+az network express-route port link update --help
+
+# After CAK/CKN + Key Vault prerequisites are prepared, update one link,
+# then validate it before modifying the second link.
+# Use the exact current parameters shown by `--help` and Microsoft Learn.</code></pre><p class="small">Because MACsec parameters include sensitive key/Key Vault details and CLI options can evolve, the report intentionally does not fabricate placeholder flags. The command group above is the current Azure CLI surface for ExpressRoute Direct MACsec management.</p></div>
+<h3>Verification</h3><pre><code>az network express-route port link show \
+  --resource-group &lt;rg&gt; \
+  --port-name &lt;expressroute-direct-port&gt; \
+  --name &lt;link-name&gt; \
+  --output jsonc</code></pre><div class="expected"><strong>Representative expected state:</strong><pre class="output"><code>{
+  "name": "link1",
+  "provisioningState": "Succeeded",
+  "macSecConfig": { "cipher": "GcmAesXpn256", "sciState": "Enabled" }
+}</code></pre>Then verify the customer router shows the secure channel up and counters increasing, and confirm the BGP adjacency carried over that physical link remains Established.</div>
+<h3>Troubleshooting</h3><p>If the ExpressRoute port is provisioned but BGP is down immediately after enabling MACsec, do not start by changing BGP. First inspect the link’s MACsec state and the CE secure-channel counters. A cipher mismatch or key mismatch prevents Ethernet delivery, so BGP never gets packets.</p><pre><code>az network express-route port link show -g &lt;rg&gt; --port-name &lt;port&gt; -n &lt;link&gt; -o jsonc</code></pre><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>{ "provisioningState":"Succeeded", "macSecConfig":{"cipher":"GcmAesXpn256"} }
+# Customer router: Secure Channel = DOWN, RxSecurePkts = 0</code></pre><strong>Meaning:</strong> Azure resource provisioning succeeded, but the secure channel did not. Compare CAK/CKN, cipher, SCI requirements, and Key Vault accessibility. Restore the known-good link before rotating the second link.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/expressroute-about-encryption">ExpressRoute encryption</a> · <strong>Scenario/how-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-macsec">Configure MACsec on ExpressRoute Direct</a></div></section>
+
+<section class="lesson" id="l2"><div class="eyebrow">Lesson 2 · Hybrid connectivity</div><h2>VPN Gateway custom IPsec/IKE policy: controlling what the peers negotiate</h2>
+<h3>Why it matters</h3><p>A site-to-site VPN can be “up” only after both peers agree on compatible cryptographic proposals. Azure’s defaults work for many devices, but regulated environments, appliance standards, or interoperability constraints often require a custom policy. A custom policy lets you specify IKE encryption/integrity and Diffie-Hellman, IPsec encryption/integrity, PFS, and SA lifetimes. The important design point is that both endpoints must have a compatible set; a stronger Azure policy that the remote firewall cannot negotiate is simply a broken tunnel.</p><h3>Architecture</h3><div class="architecture"><div><p>IKE negotiation is the control-plane conversation. It authenticates peers, chooses the Phase 1/IKE cryptographic suite, and establishes the security association from which CHILD_SAs are created. The CHILD_SA is the data-plane protection for application packets. Traffic selectors determine which source/destination prefixes are eligible for the CHILD_SA. Route-based Azure VPN gateways normally work with broad selectors, but policy-based traffic selectors can be enabled for interoperability with specific peers; when that is used, Microsoft requires a custom IPsec/IKE policy.</p><p>This produces two separate failure classes: <strong>IKE failure</strong>, where no secure control relationship forms; and <strong>traffic-selector/data-SA failure</strong>, where IKE is established but the actual application flow has no matching CHILD_SA.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.svg" alt="VPN Gateway custom IPsec IKE architecture"><figcaption>IKE negotiates peer security; the CHILD_SA carries protected application traffic.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Have an existing route-based VPN Gateway, local network gateway, and S2S connection. Document the remote firewall’s supported algorithms before changing Azure. If using policy-based traffic selectors, document the exact local/remote prefix pairs because those selectors become part of Phase 2 interoperability.</p><div class="lab"><pre><code>az network vpn-connection ipsec-policy add \
+  --resource-group &lt;rg&gt; \
+  --connection-name &lt;s2s-connection&gt; \
+  --dh-group DHGroup14 \
+  --ike-encryption AES256 \
+  --ike-integrity SHA384 \
+  --ipsec-encryption AES256 \
+  --ipsec-integrity SHA256 \
+  --pfs-group PFS2048 \
+  --sa-lifetime 27000 \
+  --sa-max-size 102400000
+
+az network vpn-connection ipsec-policy list \
+  --resource-group &lt;rg&gt; \
+  --connection-name &lt;s2s-connection&gt; \
+  --output table</code></pre></div><p>The example uses an explicit policy rather than Azure defaults. The remote peer must be configured to match. Changing only one side creates a negotiation outage until the proposals again overlap.</p>
+<h3>Verification</h3><pre><code>az network vpn-connection show \
+  -g &lt;rg&gt; -n &lt;s2s-connection&gt; \
+  --query "{status:connectionStatus,egress:egressBytesTransferred,ingress:ingressBytesTransferred}" \
+  -o json</code></pre><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{
+  "status": "Connected",
+  "egress": 1843200,
+  "ingress": 2050048
+}</code></pre><code>Connected</code> proves tunnel state; increasing byte counters prove data is actually traversing it. On the peer firewall, verify matching IKE and IPsec SAs and inspect the negotiated algorithms.</div>
+<h3>Troubleshooting</h3><p>When <code>connectionStatus</code> remains <code>NotConnected</code>, compare the Azure policy with the remote proposal. When status is <code>Connected</code> but byte counters do not move, focus on selectors, routes, and the actual protected prefixes rather than IKE.</p><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>{ "status":"Connected", "egress":0, "ingress":0 }
+Peer firewall: IKE SA = UP; IPsec CHILD_SA for 10.20.0.0/16 -> 10.50.0.0/16 = absent</code></pre><strong>Meaning:</strong> Phase 1 is healthy, but Phase 2/selectors do not cover the intended flow. Correct traffic selectors or NAT-translated prefixes and re-negotiate.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/ipsec-ike-policy-howto">Custom IPsec/IKE policy</a> · <strong>CLI reference:</strong> <a href="https://learn.microsoft.com/en-us/cli/azure/network/vpn-connection/ipsec-policy">az network vpn-connection ipsec-policy</a></div></section>
+
+<section class="lesson" id="l3"><div class="eyebrow">Lesson 3 · Hybrid connectivity</div><h2>ExpressRoute Metro: resilience across two peering sites in one metro</h2>
+<h3>Why it matters</h3><p>A normal ExpressRoute circuit already has redundant connections, but those redundant paths terminate within a peering location. A peering-location outage is therefore a larger failure domain than a single router or link failure. ExpressRoute Metro addresses that failure domain by dual-homing the service across two distinct ExpressRoute peering locations in the same metropolitan area. It is useful when the business wants private-cloud connectivity to survive loss or isolation of one metro peering site without building a separate intercity design.</p><h3>Architecture</h3><div class="architecture"><div><p>Metro gives you two Microsoft peering-location failure domains. The customer/provider side must still deliver real path diversity to both locations; Metro does not magically make your carrier last mile diverse. BGP is established over each path, and the customer network should advertise the required prefixes on both. Normal routing policy determines which path is active or preferred. The resiliency benefit appears only if the second path is independently reachable and sized for production traffic.</p><p>For a provider circuit, the provider extends connectivity to both peering locations. ExpressRoute Direct can also be used in a Metro configuration. Migration from a standard circuit is normally treated as building the Metro circuit in parallel, validating it, then moving traffic rather than converting an existing circuit in place.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L03-expressroute-metro.svg" alt="ExpressRoute Metro dual peering locations"><figcaption>ExpressRoute Metro distributes the Microsoft-side peering failure domain across two sites in one metropolitan area.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L03-expressroute-metro.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L03-expressroute-metro.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>First confirm the Metro location and provider support. Then verify that your carrier design actually reaches both facilities through independent paths. The Azure CLI can discover providers/peering locations and inspect the resulting circuit and peerings. Creation may use the normal ExpressRoute circuit or Direct workflow with a Metro-capable location.</p><div class="lab"><pre><code>az network express-route list-service-providers --output table
+
+az network express-route show \
+  --resource-group &lt;rg&gt; \
+  --name &lt;metro-circuit&gt; \
+  --output jsonc
+
+az network express-route peering list \
+  --resource-group &lt;rg&gt; \
+  --circuit-name &lt;metro-circuit&gt; \
+  --output table</code></pre></div>
+<h3>Verification</h3><p>Azure provisioning state is only the first check. Verify every customer edge learns Azure routes and advertises the required on-premises routes over both peering-location paths. Then fail one path intentionally in a maintenance window and verify traffic moves without route blackholing.</p><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>Name             PeeringType    PeeringState    ProvisioningState
+---------------  -------------  --------------  -----------------
+AzurePrivate     AzurePrivate   Enabled         Succeeded
+
+Circuit serviceProviderProvisioningState: Provisioned</code></pre>On both CE routers, the same critical Azure prefixes should be reachable through the surviving Metro side during a site/path test.</div>
+<h3>Troubleshooting</h3><p>A frequent design mistake is assuming “Metro” proves end-to-end diversity. If both carrier access circuits share the same conduit, device, or carrier aggregation node, a local failure can still remove both.</p><pre><code>az network express-route show -g &lt;rg&gt; -n &lt;metro-circuit&gt; \
+  --query "{providerState:serviceProviderProvisioningState,circuitState:circuitProvisioningState}" -o json</code></pre><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>{ "providerState":"Provisioned", "circuitState":"Enabled" }
+CE-B: BGP = Idle</code></pre><strong>Meaning:</strong> Azure circuit provisioning is complete, but one end-to-end BGP path is not. Investigate provider cross-connect/VLAN/BGP configuration on the failing peering side rather than rebuilding the Azure circuit.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/metro">ExpressRoute Metro</a> · <strong>Scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/design-architecture-for-resiliency">ExpressRoute resiliency design</a></div></section>
+
+<section class="lesson" id="l4"><div class="eyebrow">Lesson 4 · Hybrid connectivity</div><h2>IPsec over ExpressRoute with Virtual WAN: encrypted overlay on private transport</h2>
+<h3>Why it matters</h3><p>Some organizations need both the predictable private transport of ExpressRoute and cryptographic protection at Layer 3. In Virtual WAN, a design can use ExpressRoute as the underlay path that reaches VPN endpoints while an IPsec tunnel provides encryption over that private path. This is different from MACsec: MACsec protects the local Direct Ethernet link, whereas this design creates an IPsec overlay whose encrypted boundary is between VPN peers.</p><h3>Architecture</h3><div class="architecture"><div><p>Think in three layers. <strong>Underlay:</strong> ExpressRoute provides reachability to the private VPN peer addresses. <strong>Overlay control plane:</strong> IKE negotiates the Virtual WAN VPN connection. <strong>Overlay data plane:</strong> application prefixes travel inside ESP/IPsec and are then routed by the Virtual WAN hub after decryption. Each layer can fail independently.</p><p>The most useful troubleshooting rule is therefore ordered: prove underlay reachability first, prove IKE/IPsec second, prove post-decryption routing third. If you reverse that order, you can waste time examining Virtual WAN route tables when the VPN peer addresses themselves are unreachable over ExpressRoute.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.svg" alt="IPsec over ExpressRoute with Virtual WAN"><figcaption>ExpressRoute is the private underlay; the Virtual WAN VPN connection is the encrypted overlay.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>You need a Virtual WAN virtual hub with both ExpressRoute and VPN capability, an ExpressRoute connection that can route to the on-premises VPN endpoint, and a Virtual WAN VPN site/connection. The <code>virtual-wan</code> Azure CLI extension provides the Virtual WAN connection IPsec policy surface.</p><div class="lab"><pre><code>az network vpn-gateway connection show \
+  --resource-group &lt;rg&gt; \
+  --gateway-name &lt;vwan-vpn-gateway&gt; \
+  --name &lt;connection&gt; \
+  --output jsonc
+
+az network vpn-gateway connection ipsec-policy add \
+  --resource-group &lt;rg&gt; \
+  --gateway-name &lt;vwan-vpn-gateway&gt; \
+  --connection-name &lt;connection&gt; \
+  --dh-group DHGroup14 \
+  --ike-encryption AES256 \
+  --ike-integrity SHA256 \
+  --ipsec-encryption AES256 \
+  --ipsec-integrity SHA256 \
+  --pfs-group PFS2048 \
+  --sa-lifetime 27000 \
+  --sa-max-size 102400000</code></pre></div>
+<h3>Verification</h3><pre><code>az network vpn-gateway connection ipsec-policy list \
+  -g &lt;rg&gt; --gateway-name &lt;vwan-vpn-gateway&gt; \
+  --connection-name &lt;connection&gt; -o table
+
+az network vpn-gateway connection show \
+  -g &lt;rg&gt; --gateway-name &lt;vwan-vpn-gateway&gt; -n &lt;connection&gt; \
+  --query "{status:connectionStatus,provisioning:provisioningState}" -o json</code></pre><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{ "status":"Connected", "provisioning":"Succeeded" }</code></pre>Also verify the on-premises VPN device shows IKE/IPsec SAs and that decrypted workload prefixes are learned through the intended Virtual WAN route table.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>connectionStatus: NotConnected
+On-premises route lookup for Azure VPN peer: no route / wrong next hop</code></pre><strong>Meaning:</strong> the IPsec overlay cannot form because the ExpressRoute underlay does not reach the VPN peer. Fix the private underlay/BGP advertisement first. If underlay reachability works but IKE fails, compare policies and PSK; if IKE works but applications fail, inspect Virtual WAN effective routes after decryption.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/virtual-wan/vpn-over-expressroute">VPN over ExpressRoute with Virtual WAN</a> · <strong>CLI:</strong> <a href="https://learn.microsoft.com/en-us/cli/azure/network/vpn-gateway/connection/ipsec-policy">Virtual WAN IPsec policy commands</a></div></section>
+
+<section class="lesson" id="l5"><div class="eyebrow">Lesson 5 · Routing</div><h2>VNet peering gateway transit: sharing one hybrid gateway with spokes</h2>
+<h3>Why it matters</h3><p>Hub-and-spoke networks often centralize an ExpressRoute or VPN gateway in the hub. Without gateway transit, every spoke would need its own hybrid gateway or another transit design. Gateway transit lets the hub expose its gateway to peered spokes while keeping gateway ownership centralized.</p><h3>Architecture</h3><div class="architecture"><div><p>The configuration is directional. On the hub-to-spoke peering, <code>allowGatewayTransit</code> advertises the hub gateway for use by peers. On the spoke-to-hub peering, <code>useRemoteGateways</code> tells the spoke to consume that remote gateway. Those flags are not interchangeable. The effective route table on a spoke NIC is the best evidence that the spoke actually learned on-premises prefixes through the remote gateway.</p><p>Gateway transit is not general transitive peering. Spoke A does not automatically become reachable from Spoke B merely because both use the hub gateway. Spoke-to-spoke connectivity still depends on peering, routing through an NVA, Virtual WAN, or another explicit transit mechanism.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L05-gateway-transit.svg" alt="VNet peering gateway transit"><figcaption>Hub advertises gateway transit; spoke consumes the remote gateway.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L05-gateway-transit.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L05-gateway-transit.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>The hub needs a supported VPN or ExpressRoute virtual network gateway and a VNet peering to the spoke. Address spaces must not overlap. Configure the flags on the correct direction of the peering.</p><div class="lab"><pre><code>az network vnet peering update \
+  -g &lt;rg&gt; --vnet-name &lt;hub-vnet&gt; \
+  -n &lt;hub-to-spoke&gt; \
+  --set allowGatewayTransit=true
+
+az network vnet peering update \
+  -g &lt;rg&gt; --vnet-name &lt;spoke-vnet&gt; \
+  -n &lt;spoke-to-hub&gt; \
+  --set useRemoteGateways=true</code></pre></div>
+<h3>Verification</h3><pre><code>az network vnet peering show -g &lt;rg&gt; --vnet-name &lt;hub-vnet&gt; -n &lt;hub-to-spoke&gt; \
+  --query "{state:peeringState,allowGatewayTransit:allowGatewayTransit}" -o json
+
+az network vnet peering show -g &lt;rg&gt; --vnet-name &lt;spoke-vnet&gt; -n &lt;spoke-to-hub&gt; \
+  --query "{state:peeringState,useRemoteGateways:useRemoteGateways}" -o json
+
+az network nic show-effective-route-table -g &lt;rg&gt; -n &lt;spoke-nic&gt; -o table</code></pre><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{ "state":"Connected", "allowGatewayTransit":true }
+{ "state":"Connected", "useRemoteGateways":true }
+
+Source          State   Address Prefix     Next Hop Type
+--------------  ------  -----------------  -------------
+VirtualNetwork  Active  10.200.0.0/16      VirtualNetworkGateway</code></pre>The on-premises prefix appearing with <code>VirtualNetworkGateway</code> on the spoke NIC confirms the route is actually usable by the VM.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>Peering state: Connected
+useRemoteGateways: false
+Effective route table: no 10.200.0.0/16 route</code></pre><strong>Meaning:</strong> the peering exists, but the spoke is not consuming the hub gateway. Correct the spoke-side flag. If the flag is true but the route is missing, inspect the hub gateway/BGP learned routes rather than changing the spoke NSG.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#gateways-and-on-premises-connectivity">VNet peering gateway transit</a> · <strong>How-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-peering-gateway-transit">Configure gateway transit</a></div></section>
+
+<section class="lesson" id="l6"><div class="eyebrow">Lesson 6 · Core infrastructure</div><h2>Standard Load Balancer HA Ports: one rule for all ports and protocols</h2>
+<h3>Why it matters</h3><p>Network virtual appliances usually need to inspect arbitrary TCP, UDP, and sometimes other IP flows. Creating a separate load-balancing rule for every port is not practical. An internal Standard Load Balancer HA Ports rule uses protocol <code>All</code> and frontend/backend port <code>0</code> so a single rule can distribute all relevant flows to healthy NVA instances.</p><h3>Architecture</h3><div class="architecture"><div><p>The frontend IP becomes the next hop that UDRs can target for an NVA scale set or pair. The health probe determines which NVA instances are eligible. The load balancer is flow-based; it does not understand firewall session state. If the firewall requires symmetric traffic, the overall route design must make forward and return flows traverse a compatible appliance/session path. Floating IP/direct server return settings are also relevant in some NVA architectures because the appliance often needs to see the original destination address.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L06-load-balancer-ha-ports.svg" alt="Standard Load Balancer HA Ports with NVAs"><figcaption>HA Ports distributes arbitrary traffic to healthy NVA backends through one all-protocol/all-port rule.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L06-load-balancer-ha-ports.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L06-load-balancer-ha-ports.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Create an internal Standard Load Balancer, frontend IP, backend pool containing the NVA NIC/IP configurations, and a probe that represents NVA readiness. Then create the HA Ports rule.</p><div class="lab"><pre><code>az network lb rule create \
+  --resource-group &lt;rg&gt; \
+  --lb-name &lt;internal-lb&gt; \
+  --name ha-ports \
+  --protocol All \
+  --frontend-port 0 \
+  --backend-port 0 \
+  --frontend-ip-name &lt;frontend-config&gt; \
+  --backend-pool-name &lt;nva-pool&gt; \
+  --probe-name &lt;health-probe&gt;
+
+az network lb rule show -g &lt;rg&gt; --lb-name &lt;internal-lb&gt; -n ha-ports -o jsonc</code></pre></div>
+<h3>Verification</h3><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{
+  "protocol": "All",
+  "frontendPort": 0,
+  "backendPort": 0,
+  "provisioningState": "Succeeded"
+}</code></pre>Also verify both NVA backend instances are healthy. Generate TCP and UDP test flows and confirm the NVA session table sees them with the expected original source/destination values.</div>
+<h3>Troubleshooting</h3><p>If the rule exists but only one NVA receives traffic, inspect probe health and backend-pool membership. If both receive traffic but stateful sessions reset, inspect return-path symmetry rather than changing the HA Ports rule.</p><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>Rule: protocol=All, frontendPort=0, backendPort=0, provisioningState=Succeeded
+Backend health: nva01=Healthy, nva02=Unhealthy</code></pre><strong>Meaning:</strong> the HA Ports rule is valid; nva02 is intentionally removed from new flow distribution because the health probe failed. Fix the NVA listener/probe path or appliance health.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-ha-ports-overview">HA Ports overview</a> · <strong>How-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-ha-ports-how-to">Configure HA Ports</a></div></section>
+
+<section class="lesson" id="l7"><div class="eyebrow">Lesson 7 · Core infrastructure</div><h2>Azure Public DNS DNSSEC: proving that DNS answers are authentic</h2>
+<h3>Why it matters</h3><p>DNSSEC protects DNS integrity, not confidentiality. A DNSSEC-validating resolver can verify that a DNS answer is cryptographically tied to the signed zone and its parent chain of trust. That reduces the risk of accepting forged or modified DNS responses. For a public Azure DNS zone, the operationally important pieces are zone signing, DNSKEY/RRSIG records, the DS record published in the parent zone, and validation by recursive resolvers.</p><h3>Architecture</h3><div class="architecture"><div><p>The child zone contains DNSKEY records and signatures over record sets. The parent zone contains a DS record that points to the child’s key material. A validating resolver starts with a trusted root and walks the chain through parent DS to child DNSKEY. If the DS record is wrong or stale after a key change, the zone can become <em>bogus</em> to validating clients even though authoritative servers still answer normally.</p><p>That means DNSSEC rollout has two control planes: Azure zone signing and registrar/parent delegation. Both must be correct. Testing only <code>nslookup</code> against a non-validating resolver can miss a broken chain.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L07-azure-dns-dnssec.svg" alt="Azure Public DNS DNSSEC chain of trust"><figcaption>DNSSEC validation follows the parent DS record to the signed Azure DNS child zone.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L07-azure-dns-dnssec.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L07-azure-dns-dnssec.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Start with an Azure Public DNS zone and control of the registrar/parent zone so the DS record can be published. DNSSEC support and command surfaces evolve, so inspect the current Azure CLI zone capabilities and follow the Microsoft DNSSEC workflow rather than assuming a legacy syntax.</p><div class="lab"><pre><code>az network dns zone show -g &lt;rg&gt; -n &lt;zone-name&gt; -o jsonc
+az network dns zone --help
+
+# After enabling DNSSEC using the current Microsoft-supported workflow,
+# inspect the zone state and obtain the DS information that must be
+# published at the registrar/parent.</code></pre></div>
+<h3>Verification</h3><p>Use a validating DNS tool such as <code>dig +dnssec</code>. The <code>ad</code> (Authenticated Data) flag is strong evidence that the recursive resolver validated the answer. Inspect DNSKEY and DS records directly.</p><div class="expected"><pre class="output"><code>$ dig +dnssec www.example.com A
+;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1
+www.example.com. 300 IN A 203.0.113.20
+
+$ dig +dnssec example.com DNSKEY
+;; ANSWER SECTION includes DNSKEY + RRSIG
+
+$ dig +dnssec example.com DS
+;; parent response includes matching DS</code></pre>The <code>ad</code> flag and matching DS/DNSKEY chain are the relevant success indicators.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>$ dig www.example.com @1.1.1.1
+;; ->>HEADER<<- status: SERVFAIL
+
+$ dig +cdflag +dnssec www.example.com @1.1.1.1
+;; returns data when validation is disabled</code></pre><strong>Meaning:</strong> authoritative data exists, but DNSSEC validation is failing. Compare the DS at the parent with the active DNSKEY in the Azure zone. A stale/wrong DS after a key transition is a classic cause.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/dns/dnssec">DNSSEC in Azure DNS</a> · <strong>Operations:</strong> <a href="https://learn.microsoft.com/en-us/azure/dns/dnssec-how-to">Configure DNSSEC</a></div></section>
+
+<section class="lesson" id="l8"><div class="eyebrow">Lesson 8 · Core infrastructure</div><h2>Front Door Premium Private Link origins: public edge, private backend</h2>
+<h3>Why it matters</h3><p>Azure Front Door is a global public edge service, but the application origin does not have to be directly exposed to the public Internet. Front Door Premium can connect to supported origins using Private Link. The user still reaches Front Door’s public endpoint; Front Door then reaches the origin over an approved private endpoint relationship. This is valuable when you want global anycast/WAF/edge acceleration while keeping the backend reachable only through private connectivity.</p><h3>Architecture</h3><div class="architecture"><div><p>Client DNS resolves the Front Door endpoint. TLS and HTTP routing occur at Front Door. The selected origin group contains a Private-Link-enabled origin. Azure creates a private endpoint request against the origin resource; an operator must approve it. Only after approval and establishment can health probes and production requests traverse the private path. Origin host headers and certificates still matter because Private Link changes connectivity, not HTTP/TLS application semantics.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L08-front-door-private-link.svg" alt="Azure Front Door Premium Private Link origin"><figcaption>Front Door terminates the public edge connection and uses Private Link to reach the backend.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L08-front-door-private-link.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L08-front-door-private-link.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Use Front Door Premium and a supported origin resource/subresource. Create the origin group, then create an origin with Private Link enabled and the origin resource ID, private-link region, and subresource type. The example follows the current Azure CLI pattern.</p><div class="lab"><pre><code>az afd origin-group create \
+  -g &lt;rg&gt; --profile-name &lt;afd-profile&gt; \
+  --origin-group-name &lt;origin-group&gt; \
+  --probe-request-type GET \
+  --probe-protocol Https \
+  --probe-path /health \
+  --probe-interval-in-seconds 60
+
+az afd origin create \
+  --resource-group &lt;rg&gt; \
+  --profile-name &lt;afd-profile&gt; \
+  --origin-group-name &lt;origin-group&gt; \
+  --origin-name &lt;origin-name&gt; \
+  --host-name &lt;origin-fqdn&gt; \
+  --origin-host-header &lt;origin-fqdn&gt; \
+  --https-port 443 \
+  --enable-private-link true \
+  --private-link-location &lt;region&gt; \
+  --private-link-resource &lt;origin-resource-id&gt; \
+  --private-link-sub-resource-type &lt;subresource&gt;</code></pre></div>
+<h3>Verification</h3><pre><code>az afd origin show -g &lt;rg&gt; --profile-name &lt;afd-profile&gt; \
+  --origin-group-name &lt;origin-group&gt; -n &lt;origin-name&gt; -o jsonc</code></pre><div class="expected"><strong>Representative expected state:</strong><pre class="output"><code>{
+  "enabledState": "Enabled",
+  "sharedPrivateLinkResource": { "status": "Approved" },
+  "provisioningState": "Succeeded"
+}</code></pre>Then verify Front Door origin health is Healthy and an end-user request returns the expected backend response.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>sharedPrivateLinkResource.status: Pending
+Origin health: Unhealthy</code></pre><strong>Meaning:</strong> the Front Door configuration exists, but the origin owner has not approved the private endpoint request. Approve it before troubleshooting WAF rules or application code. If status is Approved but health is Unhealthy, validate host header, HTTPS certificate, health path, and backend listener.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/frontdoor/private-link">Front Door Private Link</a> · <strong>CLI example:</strong> <a href="https://learn.microsoft.com/en-us/azure/frontdoor/standard-premium/how-to-enable-private-link-apim">Private Link origin with Azure CLI</a></div></section>
+
+<section class="lesson" id="l9"><div class="eyebrow">Lesson 9 · Security</div><h2>Azure Firewall Premium TLS inspection: decrypt, inspect, re-encrypt</h2>
+<h3>Why it matters</h3><p>Without TLS inspection, a firewall can make decisions from metadata such as IP addresses and SNI/FQDN, but the application payload remains encrypted. Azure Firewall Premium TLS inspection lets the firewall terminate the client TLS session, inspect the decrypted traffic with advanced controls such as IDPS, then establish a new TLS session to the destination. This adds visibility but also inserts the firewall into certificate trust, so the PKI design becomes part of the network design.</p><h3>Architecture</h3><div class="architecture"><div><p>The client connects toward an HTTPS destination through Azure Firewall. The firewall presents a dynamically generated certificate signed by a CA trusted by the client. After decrypting and inspecting, the firewall independently validates/connects to the real server certificate. Therefore the client must trust the enterprise/intermediate CA configured for TLS inspection. If it does not, users see certificate errors even though TCP routing and firewall policy may be correct.</p><p>Do not confuse TLS inspection with simple HTTPS allow-listing. Application rules can use FQDNs without decrypting payloads; TLS inspection is required when the security control needs content-level visibility.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.svg" alt="Azure Firewall Premium TLS inspection"><figcaption>Firewall Premium creates two TLS sessions: client-to-firewall and firewall-to-server.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Use Azure Firewall Premium and a Firewall Policy. Prepare the certificate authority/key material using the Microsoft-supported Key Vault/certificate approach and distribute trust to clients. Then enable TLS inspection on the relevant application rule collection/rules rather than attempting to inspect everything blindly.</p><div class="lab"><pre><code># Inspect policy tier and TLS-related policy state.
+az network firewall policy show \
+  -g &lt;rg&gt; -n &lt;firewall-policy&gt; -o jsonc
+
+# Inspect rule collection groups where TLS inspection is enabled.
+az network firewall policy rule-collection-group list \
+  -g &lt;rg&gt; --policy-name &lt;firewall-policy&gt; -o table
+
+# Use the current Firewall Policy CLI/ARM/Terraform schema to bind the
+# Key Vault-backed CA and enable terminateTLS on intended application rules.</code></pre></div>
+<h3>Verification</h3><p>Test with a client that trusts the inspection CA. Check the browser/curl certificate issuer; it should show the enterprise inspection issuer rather than the public site’s original leaf issuer. Then confirm the request is logged by Firewall and that IDPS/application rule behavior applies.</p><div class="expected"><pre class="output"><code>$ curl -Iv https://www.example.com
+* SSL connection using TLSv1.3
+* Server certificate:
+*  subject: CN=www.example.com
+*  issuer: CN=Corp-Azure-Firewall-Inspection-CA
+&lt; HTTP/2 200</code></pre>This proves the client accepted the firewall-generated certificate and the firewall successfully re-established TLS to the destination.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>$ curl -Iv https://www.example.com
+SSL certificate problem: unable to get local issuer certificate</code></pre><strong>Meaning:</strong> TCP/443 can be reachable while client trust is wrong. Install/verify the inspection CA chain before touching routes. If trust is correct but Firewall logs show certificate validation failure to the server, inspect the destination certificate/SNI and firewall outbound validation path.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/firewall/premium-features#tls-inspection">Firewall Premium TLS inspection</a> · <strong>How-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/firewall/premium-deploy-certificates">Deploy certificates for TLS inspection</a></div></section>
+
+<section class="lesson" id="l10"><div class="eyebrow">Lesson 10 · Monitoring</div><h2>Virtual Network Flow Logs and Traffic Analytics: Layer-4 evidence at VNet scope</h2>
+<h3>Why it matters</h3><p>Flow logs answer questions such as “which source talked to which destination, on what port, and was traffic observed?” without requiring a packet capture on every VM. VNet flow logs broaden observability to the virtual network level and can send records to a storage account; Traffic Analytics processes those records into Log Analytics for higher-level patterns and visualizations. They are excellent for connection inventory, unexpected egress, traffic-volume analysis, and corroborating firewall/NSG events.</p><h3>Architecture</h3><div class="architecture"><div><p>The monitored VNet produces flow records. A storage account stores the raw flow-log data. When Traffic Analytics is enabled, the flow-log resource references a Log Analytics workspace and Azure processes the records on the configured interval. This is not packet capture: flow logs summarize conversations and state at Layer 3/4; they do not contain payloads, TLS handshakes, or application transactions.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.svg" alt="VNet Flow Logs and Traffic Analytics"><figcaption>VNet flow records are written to storage and optionally analyzed through Log Analytics/Traffic Analytics.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><div class="lab"><pre><code>az monitor log-analytics workspace create \
+  --resource-group &lt;rg&gt; \
+  --name &lt;workspace&gt; \
+  --location &lt;region&gt;
+
+az network watcher flow-log create \
+  --location &lt;region&gt; \
+  --resource-group &lt;rg&gt; \
+  --name &lt;flow-log-name&gt; \
+  --vnet &lt;vnet-name&gt; \
+  --storage-account &lt;storage-account&gt; \
+  --traffic-analytics true \
+  --workspace &lt;workspace&gt; \
+  --interval 10</code></pre></div>
+<h3>Verification</h3><pre><code>az network watcher flow-log show \
+  --location &lt;region&gt; \
+  --resource-group &lt;rg&gt; \
+  --name &lt;flow-log-name&gt; \
+  --output jsonc</code></pre><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{
+  "enabled": true,
+  "flowAnalyticsConfiguration": {
+    "networkWatcherFlowAnalyticsConfiguration": {
+      "enabled": true,
+      "trafficAnalyticsInterval": 10
+    }
+  },
+  "provisioningState": "Succeeded"
+}</code></pre>Next verify new blobs appear in the storage account and Traffic Analytics data appears after ingestion delay.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>enabled: true
+provisioningState: Succeeded
+Traffic Analytics workspace: configured
+Storage account: no new flow-log blobs</code></pre><strong>Meaning:</strong> the control-plane object exists, but data is not arriving. Verify the target VNet/resource association, storage account access/location requirements, and that traffic actually exists during the test window. If raw blobs exist but Analytics is empty, focus on workspace/Traffic Analytics ingestion rather than the flow-log capture stage.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview">VNet flow logs</a> · <strong>CLI how-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-manage">Manage VNet flow logs</a></div></section>
+
+<section class="lesson" id="l11"><div class="eyebrow">Lesson 11 · Security troubleshooting</div><h2>Network Watcher IP Flow Verify: identify the exact NSG decision</h2>
+<h3>Why it matters</h3><p>When a VM cannot communicate, engineers often stare at multiple NSGs and try to mentally merge subnet rules, NIC rules, priorities, service tags, and defaults. IP Flow Verify asks Azure to evaluate one exact five-tuple and tell you whether the flow is allowed or denied and which rule caused the result. It narrows the question from “is networking broken?” to “would Azure’s NSG logic allow this packet?”</p><h3>Architecture</h3><div class="architecture"><div><p>The input is a VM/NIC context, direction, protocol, local IP/port, and remote IP/port. Azure evaluates the effective security policy and returns <code>Allow</code> or <code>Deny</code> plus the responsible rule. It does not send an actual application packet. Therefore an Allow result does not prove routing, guest OS firewall, listener health, load balancer behavior, or application response.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L11-ip-flow-verify.svg" alt="Network Watcher IP Flow Verify decision path"><figcaption>IP Flow Verify evaluates the effective NSG decision for one precise flow tuple.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L11-ip-flow-verify.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L11-ip-flow-verify.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>Use Network Watcher in the VM’s region and know the exact source/destination tuple you are testing. Test both directions when necessary because inbound and outbound policy can differ.</p><div class="lab"><pre><code>az network watcher test-ip-flow \
+  --resource-group &lt;rg&gt; \
+  --vm &lt;vm-name&gt; \
+  --direction Inbound \
+  --protocol TCP \
+  --local &lt;vm-private-ip&gt;:443 \
+  --remote &lt;client-ip&gt;:50000
+
+az network nic show-effective-nsg \
+  --resource-group &lt;rg&gt; \
+  --name &lt;vm-nic&gt;</code></pre></div>
+<h3>Verification</h3><div class="expected"><strong>Representative expected output:</strong><pre class="output"><code>{
+  "access": "Allow",
+  "ruleName": "securityRules/Allow-Https"
+}</code></pre>This proves the effective Azure NSG policy allows the specified flow. The next test should be a real TCP/application probe rather than more NSG changes.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>{
+  "access": "Deny",
+  "ruleName": "defaultSecurityRules/DenyAllInBound"
+}</code></pre><strong>Meaning:</strong> no higher-priority inbound rule matched. Add or correct the intended NSG rule, then rerun the exact same tuple. If the result changes to Allow but the application still fails, move to effective routes, guest firewall/listener, load balancer, or application diagnostics.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/network-watcher/ip-flow-verify-overview">IP Flow Verify overview</a> · <strong>How-to:</strong> <a href="https://learn.microsoft.com/en-us/azure/network-watcher/ip-flow-verify-cli">IP Flow Verify with Azure CLI</a></div></section>
+
+<section class="lesson" id="l12"><div class="eyebrow">Lesson 12 · Private service access</div><h2>Azure Private Link Service: publish your own service privately</h2>
+<h3>Why it matters</h3><p>Private Endpoint is often discussed as a way to consume Microsoft PaaS privately, but Private Link Service lets you become the provider. You place your application behind a Standard Load Balancer and expose that frontend through a Private Link Service. Consumers create private endpoints in their own VNets—even across subscriptions or tenants when permissions/approval allow—without VNet peering and without exposing your service directly to the public Internet.</p><h3>Architecture</h3><div class="architecture"><div><p>The provider side contains an application backend pool, a Standard Load Balancer frontend, and the Private Link Service bound to that frontend. The consumer side creates a private endpoint whose NIC receives a private IP from the consumer VNet. Azure Private Link carries the connection to the provider service. The provider approves or rejects endpoint connection requests unless auto-approval is configured.</p><p>DNS is deliberately separate from connectivity. The consumer must resolve the application name to the consumer private endpoint IP. If DNS still resolves to a public address or directly to the provider load balancer, Private Link connectivity can be perfectly configured while the application uses the wrong path.</p></div><figure class="diagram"><img src="images/2026-09-05-08-00-L12-private-link-service.svg" alt="Azure Private Link Service provider and consumer architecture"><figcaption>Consumers use private endpoints to reach a provider service published behind a Standard Load Balancer.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L12-private-link-service.drawio">Editable draw.io</a> · <a href="images/2026-09-05-08-00-L12-private-link-service.svg">SVG</a></div></figure></div>
+<h3>Prerequisites and implementation</h3><p>The provider subnet must have Private Link Service network policies disabled. A Standard Load Balancer frontend must already point to the application. Then create the service and a consumer private endpoint.</p><div class="lab"><pre><code>az network vnet subnet update \
+  -g &lt;rg&gt; --vnet-name &lt;provider-vnet&gt; \
+  -n &lt;provider-subnet&gt; \
+  --private-link-service-network-policies Disabled
+
+az network private-link-service create \
+  --resource-group &lt;rg&gt; \
+  --name &lt;pls-name&gt; \
+  --vnet-name &lt;provider-vnet&gt; \
+  --subnet &lt;provider-subnet&gt; \
+  --lb-name &lt;standard-lb&gt; \
+  --lb-frontend-ip-configs &lt;frontend-config&gt; \
+  --location &lt;region&gt;
+
+PLS_ID=$(az network private-link-service show -g &lt;rg&gt; -n &lt;pls-name&gt; --query id -o tsv)
+
+az network private-endpoint create \
+  --resource-group &lt;consumer-rg&gt; \
+  --name &lt;private-endpoint&gt; \
+  --vnet-name &lt;consumer-vnet&gt; \
+  --subnet &lt;consumer-subnet&gt; \
+  --private-connection-resource-id "$PLS_ID" \
+  --connection-name &lt;connection-name&gt; \
+  --manual-request false</code></pre></div>
+<h3>Verification</h3><pre><code>az network private-link-service show -g &lt;rg&gt; -n &lt;pls-name&gt; -o jsonc
+az network private-link-service connection list -g &lt;rg&gt; --name &lt;pls-name&gt; -o table
+az network private-endpoint show -g &lt;consumer-rg&gt; -n &lt;private-endpoint&gt; -o jsonc</code></pre><div class="expected"><strong>Representative expected state:</strong><pre class="output"><code>Private Link Service provisioningState: Succeeded
+Connection status: Approved
+Private Endpoint provisioningState: Succeeded
+Consumer PE NIC private IP: 10.50.1.4</code></pre>Finally, resolve the application FQDN from the consumer network and confirm it returns the private endpoint IP.</div>
+<h3>Troubleshooting</h3><div class="failure"><strong>Representative failure:</strong><pre class="output"><code>Connection status: Pending
+nslookup app.internal.example
+Address: 203.0.113.50</code></pre><strong>Meaning:</strong> two independent issues are visible: the provider has not approved the endpoint connection, and DNS still points to a non-Private-Link address. Approve the connection, then correct consumer DNS so the FQDN resolves to the private endpoint IP.</div><div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/private-link/private-link-service-overview">Private Link Service overview</a> · <strong>CLI quickstart:</strong> <a href="https://learn.microsoft.com/en-us/azure/private-link/create-private-link-service-cli">Create a Private Link Service with Azure CLI</a></div></section>
+
+<section class="quiz-shell" id="quiz"><h2>50-question interactive quiz</h2><p>The quiz keeps the required domain distribution: 15 Hybrid connectivity and architecture, 13 Core networking infrastructure, 10 Routing and traffic management, and 12 Security/monitoring/private service access.</p><div id="questions"></div><div class="quiz-actions"><button onclick="gradeAll()">Finish and grade</button> <button class="secondary" onclick="resetQuiz()">Reset</button></div><div id="result" class="result">Not graded yet.</div></section>
+<script>
+const H='Hybrid connectivity and architecture',C='Core networking infrastructure',R='Routing and traffic management',S='Security, monitoring, and private service access';
+const q=[
+[H,1,'What does ExpressRoute Direct MACsec encrypt?',['The Layer-2 Direct handoff','All Internet traffic','Only BGP updates','Only application TLS'],'The Layer-2 Direct handoff','MACsec protects Ethernet frames on the Direct physical link.'],
+[H,1,'Which service is required for MACsec key integration on the Azure side?',['Azure Key Vault','Azure DNS','Traffic Manager','Application Gateway'],'Azure Key Vault','CAK/CKN key material is integrated through Key Vault.'],
+[H,1,'After enabling MACsec, BGP drops. Which layer should be checked first?',['MACsec secure-channel state','DNS delegation','Front Door health','NSG service tags'],'MACsec secure-channel state','BGP rides above the encrypted Layer-2 link.'],
+[H,2,'What does IKE primarily establish?',['The authenticated security-control relationship','A VNet peering','A DNS zone','A load-balancer probe'],'The authenticated security-control relationship','IKE negotiates/authenticates peers and establishes security associations.'],
+[H,2,'Tunnel status is Connected but counters stay at zero. What is a likely next check?',['Phase-2 selectors','ExpressRoute Metro sites','DNSSEC DS record','Front Door WAF'],'Phase-2 selectors','A tunnel can have IKE up while no CHILD_SA covers the intended flow.'],
+[H,2,'When using policy-based traffic selectors on Azure VPN Gateway, what is required?',['A custom IPsec/IKE policy','A NAT Gateway','Gateway Load Balancer','Azure Firewall Premium'],'A custom IPsec/IKE policy','Microsoft requires custom IPsec/IKE policy with policy-based selectors.'],
+[H,3,'What failure domain does ExpressRoute Metro primarily improve?',['Loss of one peering location in a metro','Loss of a VM NIC','DNS cache poisoning','Application certificate expiry'],'Loss of one peering location in a metro','Metro uses two distinct peering locations in the same city.'],
+[H,3,'Does ExpressRoute Metro by itself guarantee diverse carrier last-mile paths?',['No','Yes, always','Only for VPN Gateway','Only with DNSSEC'],'No','Carrier/access diversity still has to be engineered.'],
+[H,3,'What should be tested after Metro deployment?',['Failure of one peering-site path','Only portal login','Only DNS lookup','Only storage access'],'Failure of one peering-site path','Resiliency must be demonstrated by surviving a path/site failure.'],
+[H,4,'In IPsec over ExpressRoute with Virtual WAN, what is the underlay?',['ExpressRoute','The CHILD_SA','Azure DNS','NSG'],'ExpressRoute','ExpressRoute provides reachability for the encrypted overlay endpoints.'],
+[H,4,'What should be proved before debugging IKE?',['Reachability to VPN peer addresses over ExpressRoute','DNSSEC signing','WAF policy','Load Balancer rule'],'Reachability to VPN peer addresses over ExpressRoute','The overlay cannot form if the underlay cannot reach the peers.'],
+[H,4,'After IKE is up, where are application prefixes routed?',['Virtual WAN routing after decryption','MACsec control channel','Registrar DS records','Load Balancer health probe'],'Virtual WAN routing after decryption','Decrypted prefixes follow Virtual WAN routing.'],
+[H,5,'Which hub peering flag advertises gateway transit?',['allowGatewayTransit','useRemoteGateways','allowForwardedTraffic only','privateLinkServiceNetworkPolicies'],'allowGatewayTransit','The hub side exposes the gateway with allowGatewayTransit.'],
+[H,5,'Which spoke peering flag consumes the hub gateway?',['useRemoteGateways','allowGatewayTransit','enableDnssec','floatingIp'],'useRemoteGateways','The spoke opts into the remote gateway with useRemoteGateways.'],
+[H,5,'What is the best proof that a spoke learned on-premises prefixes?',['The spoke NIC effective route table','The resource-group name','The VM size','The DNS TTL'],'The spoke NIC effective route table','It shows the actual prefix and VirtualNetworkGateway next hop.'],
+[C,6,'What values identify an HA Ports rule?',['Protocol All and ports 0/0','TCP 443 only','UDP 53 only','Protocol Any and port 65535'],'Protocol All and ports 0/0','HA Ports uses all protocols and all ports through the zero-port representation.'],
+[C,6,'What determines NVA eligibility in the backend pool?',['Health probe state','DNSSEC AD flag','IKE DH group','Private Endpoint approval'],'Health probe state','Unhealthy NVA instances are removed from new-flow distribution.'],
+[C,6,'Does HA Ports guarantee stateful return-path symmetry?',['No','Yes','Only with DNS','Only with ExpressRoute Metro'],'No','Symmetry is an end-to-end routing/appliance design property.'],
+[C,6,'What Azure Load Balancer SKU is used for HA Ports NVA designs?',['Standard','Basic only','Gateway Basic','Classic'],'Standard','HA Ports is a Standard Load Balancer capability.'],
+[C,7,'What does DNSSEC primarily provide?',['DNS data authenticity/integrity','DNS encryption','IPsec transport','NAT traversal'],'DNS data authenticity/integrity','DNSSEC validates signed DNS data; it does not encrypt DNS.'],
+[C,7,'Where is the child-zone trust anchor referenced by the parent?',['DS record','A record','PTR record','CAA only'],'DS record','The parent DS links the chain to the child DNSKEY.'],
+[C,7,'What dig flag commonly indicates successful resolver validation?',['ad','aa only','tc','rd only'],'ad','Authenticated Data indicates a validating resolver accepted the signed response.'],
+[C,7,'A signed zone returns SERVFAIL only on validating resolvers. What should be checked?',['Parent DS versus active DNSKEY','Load Balancer probe','BGP MED','Private Endpoint NIC'],'Parent DS versus active DNSKEY','A stale or incorrect DS breaks the chain of trust.'],
+[C,8,'Which Front Door tier supports Private Link origins?',['Premium','Classic only','Basic','Traffic Manager'],'Premium','Private Link origin connectivity is a Premium capability.'],
+[C,8,'What must happen before Front Door can privately reach a new origin?',['The private endpoint request is approved','DNSSEC is disabled','BGP is reset','The NSG is removed'],'The private endpoint request is approved','Pending Private Link requests are not yet usable.'],
+[C,8,'What remains important even though the origin path is private?',['Origin host header and TLS certificate','Only the public IP','Only DNS TTL','Only route-table name'],'Origin host header and TLS certificate','Private Link changes connectivity, not HTTP/TLS semantics.'],
+[C,8,'What should be checked after Private Link approval?',['Front Door origin health','ExpressRoute MACsec counters','VPN CHILD_SA','DNSSEC DS only'],'Front Door origin health','Healthy origin probes demonstrate backend reachability.'],
+[C,5,'Does VNet peering gateway transit make spoke-to-spoke peering transitive automatically?',['No','Yes','Only with DNSSEC','Only with Standard LB'],'No','Gateway transit shares the hybrid gateway; it does not create generic transitive peering.'],
+[R,5,'An on-prem prefix on a spoke NIC should show which next hop when gateway transit works?',['VirtualNetworkGateway','Internet','None','VirtualAppliance always'],'VirtualNetworkGateway','That next-hop type demonstrates the shared gateway route.'],
+[R,5,'Peering is Connected but the spoke has no on-prem route and useRemoteGateways is false. Fix?',['Enable useRemoteGateways on the spoke peering','Change DNS','Enable TLS inspection','Add HA Ports'],'Enable useRemoteGateways on the spoke peering','The spoke is not consuming the hub gateway.'],
+[R,6,'A UDR points at an ILB HA Ports frontend. What decides which NVA receives a new flow?',['Load Balancer hashing among healthy backends','DNSSEC','IKE selector','Registrar'],'Load Balancer hashing among healthy backends','Standard Load Balancer distributes flows to healthy pool members.'],
+[R,6,'Both NVAs are healthy but return traffic bypasses them. Where is the likely problem?',['Return routing/symmetry design','HA Ports protocol setting only','DNSSEC key','Private Link approval'],'Return routing/symmetry design','HA Ports does not force the reverse path.'],
+[R,3,'Both Metro paths advertise the same prefixes. What chooses the preferred path?',['BGP policy/best-path attributes','DNS TTL','WAF priority','Private Endpoint state'],'BGP policy/best-path attributes','Metro provides diverse paths; normal routing policy chooses among them.'],
+[R,3,'Azure circuit is Provisioned but CE-B BGP is Idle. What layer is failing?',['End-to-end peering/provider path on CE-B','Azure DNS','NSG rule','TLS trust'],'End-to-end peering/provider path on CE-B','The Azure circuit object can be healthy while one BGP path is not.'],
+[R,4,'IKE is up but workloads cannot reach prefixes after decryption. Next focus?',['Virtual WAN effective routing','ExpressRoute port cipher','Registrar DS','Load Balancer probe only'],'Virtual WAN effective routing','The crypto overlay is healthy; post-decryption routing is next.'],
+[R,4,'No route exists to the VPN peer address over ExpressRoute. Can the overlay form?',['No','Yes, because IPsec ignores routing','Only with DNSSEC','Only with WAF'],'No','IKE packets require underlay IP reachability.'],
+[R,10,'Flow logs show a connection but packet capture would still be needed for what?',['TLS handshake/payload-level details','Source/destination IP','Destination port','Flow existence'],'TLS handshake/payload-level details','Flow logs summarize flows; packet capture shows packet-level behavior.'],
+[R,10,'Raw flow blobs exist but Traffic Analytics is empty. Where should you focus?',['Analytics/workspace ingestion','VNet packet generation','MACsec cipher','Gateway transit flag'],'Analytics/workspace ingestion','Capture is working; the processing/analytics stage is not.'],
+[S,9,'What new trust requirement does TLS inspection introduce?',['Clients must trust the firewall inspection CA','Clients must trust DNSSEC DS','BGP peers need PFS','Load Balancer needs Key Vault'],'Clients must trust the firewall inspection CA','The firewall presents dynamically generated certificates to clients.'],
+[S,9,'curl reaches TCP/443 but reports unknown issuer after inspection is enabled. Likely cause?',['Client CA trust','No route to server','No ExpressRoute Metro','No HA Ports'],'Client CA trust','Routing works; certificate-chain trust is failing.'],
+[S,9,'Why is TLS inspection different from FQDN allow-listing?',['It decrypts content for inspection','It only changes DNS TTL','It creates BGP routes','It disables TLS'],'It decrypts content for inspection','FQDN rules can classify destinations without seeing encrypted payload content.'],
+[S,10,'What do VNet flow logs primarily record?',['Layer-3/4 flow metadata','Full packet payload','TLS private keys','DNSSEC signatures only'],'Layer-3/4 flow metadata','Flow logs describe communications rather than full packets.'],
+[S,10,'Which destination stores raw VNet flow-log records?',['Storage account','Key Vault','Front Door','App Configuration'],'Storage account','Raw flow records are written to Azure Storage.'],
+[S,10,'What service processes flow logs for higher-level analysis?',['Traffic Analytics with Log Analytics','ExpressRoute Metro','Private Link Service','DNSSEC'],'Traffic Analytics with Log Analytics','Traffic Analytics analyzes the collected records.'],
+[S,11,'What does IP Flow Verify return besides Allow/Deny?',['The rule name responsible for the decision','A packet capture','A BGP path','A TLS certificate'],'The rule name responsible for the decision','It identifies the effective NSG rule that matched.'],
+[S,11,'IP Flow Verify says Allow, but HTTPS still fails. What should you do?',['Move to routing/guest firewall/listener/application checks','Keep adding NSG rules','Disable DNSSEC','Change MACsec keys'],'Move to routing/guest firewall/listener/application checks','IP Flow Verify is policy evaluation, not an end-to-end transaction.'],
+[S,11,'What exact input does IP Flow Verify need?',['Direction, protocol, local and remote IP/port context','Only resource group','Only DNS name','Only ASN'],'Direction, protocol, local and remote IP/port context','The service evaluates a specific flow tuple.'],
+[S,12,'What Azure resource is normally in front of a Private Link Service provider backend?',['Standard Load Balancer','Traffic Manager','DNS resolver','VPN Gateway'],'Standard Load Balancer','Private Link Service is associated with a Standard Load Balancer frontend.'],
+[S,12,'What provider-side subnet setting is required before creating Private Link Service?',['Disable privateLinkServiceNetworkPolicies','Disable all NSGs','Enable useRemoteGateways','Enable DNSSEC'],'Disable privateLinkServiceNetworkPolicies','The provider subnet must disable Private Link Service network policies.'],
+[S,12,'Connection status is Pending. What does the provider need to do?',['Approve the private endpoint connection','Change BGP local preference','Enable HA Ports','Sign DNS zone'],'Approve the private endpoint connection','Pending requests are not usable until approved unless auto-approval applies.'],
+[S,12,'Private Endpoint is Approved but the application FQDN resolves to a public IP. What is wrong?',['Consumer DNS','Private Link transport','Load Balancer health necessarily','IKE policy'],'Consumer DNS','Connectivity can be correct while DNS sends the client to the wrong address.']
+];
+function shuffle(arr,seed){let a=[...arr];for(let i=a.length-1;i>0;i--){seed=(seed*1664525+1013904223)>>>0;let j=seed%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}function render(){const root=document.getElementById('questions');q.forEach((x,i)=>{const opts=shuffle(x[3],20260905+i);const d=document.createElement('div');d.className='question';d.dataset.answer=x[4];d.dataset.domain=x[0];d.innerHTML=`<div class="eyebrow">Q${i+1} · ${x[0]} · Lesson ${x[1]}</div><p><strong>${x[2]}</strong></p>`+opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o.replaceAll('"','&quot;')}"> ${o}</label>`).join('')+`<button onclick="check(${i})">Check answer</button><div id="f${i}" class="feedback"></div>`;root.appendChild(d)})}function check(i){const d=document.querySelectorAll('.question')[i],s=d.querySelector('input:checked'),f=document.getElementById('f'+i);if(!s){f.textContent='Choose an answer.';return}const ok=s.value===d.dataset.answer;f.style.color=ok?'#107c41':'#a4262c';f.textContent=(ok?'Correct. ':'Incorrect. Correct answer: '+d.dataset.answer+'. ')+q[i][5]}function gradeAll(){let correct=0,un=0,by={};document.querySelectorAll('.question').forEach((d,i)=>{let s=d.querySelector('input:checked'),dom=d.dataset.domain;if(!by[dom])by[dom]=[0,0];by[dom][1]++;if(!s){un++;return}if(s.value===d.dataset.answer){correct++;by[dom][0]++}});let lines=[`Score: ${correct}/50 (${Math.round(correct/50*100)}%)`,`Unanswered: ${un}`,'','Domain breakdown:'];Object.entries(by).forEach(([k,v])=>lines.push(`${k}: ${v[0]}/${v[1]}`));document.getElementById('result').textContent=lines.join('\n')}function resetQuiz(){document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);document.querySelectorAll('.feedback').forEach(x=>x.textContent='');document.getElementById('result').textContent='Not graded yet.'}render();
+</script>
+</main></body></html>
