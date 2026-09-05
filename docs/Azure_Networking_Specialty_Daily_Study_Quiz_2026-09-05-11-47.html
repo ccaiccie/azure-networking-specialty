@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Azure Networking Specialty Daily Study Quiz — 2026-09-05 11:47 PT</title>
+<style>body{margin:0;background:#f4f8fb;color:#13293d;font:16px/1.67 system-ui,-apple-system,"Segoe UI",sans-serif}#loading{max-width:900px;margin:10vh auto;background:#fff;padding:30px;border-radius:16px}pre.impl{background:#071d2e;color:#eef8ff;padding:16px;border-radius:10px;overflow:auto}.implementation-lab{background:#f7fbff;border:1px solid #8fc5e8;border-radius:14px;padding:18px;margin:22px 0}.implementation-lab h3{margin-top:0}.implementation-lab .verify{background:#eef7f1;border-left:4px solid #107c41;padding:10px;margin-top:12px}.revision-note{background:#fff7e6;border-left:5px solid #eaa300;padding:14px;border-radius:8px;margin:16px 0}</style></head><body><div id="loading"><h1>Loading revised Azure Networking report…</h1><p>This revision preserves today’s validated topics, diagrams, and 50-question quiz while removing redundant prose and adding implementation labs.</p></div><div id="app"></div>
+<script>
+const base='Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-05-08-00.html';
+const labs={
+1:`<div class="implementation-lab"><h3>Implementation lab — ExpressRoute Direct MACsec</h3><p><strong>Goal:</strong> inspect the ExpressRoute Direct ports/links first, then configure MACsec on one link at a time. Replace all angle-bracket values with your resources. MACsec changes the Layer-2 protection of the Direct handoff; BGP rides above it.</p><pre class="impl"><code>az network express-route port show -g &lt;resource-group&gt; -n &lt;expressroute-port&gt;
+az network express-route port link list -g &lt;resource-group&gt; --port-name &lt;expressroute-port&gt; -o table
+
+# Inspect supported link/MACsec update options before changing production.
+az network express-route port link update --help</code></pre><div class="verify"><strong>Verification:</strong> after applying the documented CAK/CKN/Key Vault configuration, use <code>az network express-route port link show</code> for each physical link and correlate with customer-router MACsec secure-channel counters. Change one redundant link at a time so the other remains a rollback path.</div></div>`,
+2:`<div class="implementation-lab"><h3>Implementation lab — custom IPsec/IKE policy</h3><p><strong>Goal:</strong> apply an explicit proposal to an existing S2S VPN connection. The Azure and peer proposals must overlap exactly enough to negotiate Phase 1 and Phase 2.</p><pre class="impl"><code>az network vpn-connection ipsec-policy add \
+  -g &lt;resource-group&gt; \
+  --connection-name &lt;connection-name&gt; \
+  --dh-group DHGroup14 \
+  --ike-encryption AES256 \
+  --ike-integrity SHA384 \
+  --ipsec-encryption AES256 \
+  --ipsec-integrity SHA256 \
+  --pfs-group PFS2048 \
+  --sa-lifetime 27000 \
+  --sa-max-size 102400000
+
+az network vpn-connection ipsec-policy list \
+  -g &lt;resource-group&gt; --connection-name &lt;connection-name&gt; -o table</code></pre><div class="verify"><strong>Verification:</strong> confirm the Azure policy, then compare IKE/IPsec SA parameters on the on-premises firewall. If IKE is up but traffic is not, validate Phase-2 selectors and any NAT-translated prefixes separately from routing.</div></div>`,
+3:`<div class="implementation-lab"><h3>Implementation lab — ExpressRoute Metro</h3><p><strong>Goal:</strong> discover supported ExpressRoute locations/providers and inspect the Metro circuit’s provisioning and BGP state. Metro availability is location/provider dependent, so discovery is part of implementation.</p><pre class="impl"><code>az network express-route list-service-providers -o table
+az network express-route show -g &lt;resource-group&gt; -n &lt;metro-circuit&gt;
+az network express-route peering list -g &lt;resource-group&gt; --circuit-name &lt;metro-circuit&gt; -o table</code></pre><div class="verify"><strong>Verification:</strong> prove that both diverse peering-site paths advertise the intended production prefixes and that either surviving path has sufficient capacity. A Metro resource alone does not prove carrier diversity between your premises and both Microsoft sites.</div></div>`,
+4:`<div class="implementation-lab"><h3>Implementation lab — IPsec over ExpressRoute with Virtual WAN</h3><p><strong>Goal:</strong> configure/inspect the Virtual WAN VPN connection’s IPsec policy while using private transport for the VPN endpoints. Treat ExpressRoute reachability as the underlay and IPsec as a separate overlay.</p><pre class="impl"><code>az network vpn-gateway connection show \
+  -g &lt;resource-group&gt; --gateway-name &lt;vwan-vpn-gateway&gt; \
+  -n &lt;connection-name&gt;
+
+az network vpn-gateway connection ipsec-policy list \
+  -g &lt;resource-group&gt; --gateway-name &lt;vwan-vpn-gateway&gt; \
+  --connection-name &lt;connection-name&gt;</code></pre><div class="verify"><strong>Verification:</strong> first prove the private VPN peer addresses are reachable over ExpressRoute, then prove the IKE/IPsec SAs, then verify decrypted application prefixes in Virtual WAN routing. This three-stage check distinguishes underlay, crypto, and post-decryption routing failures.</div></div>`,
+5:`<div class="implementation-lab"><h3>Implementation lab — VNet peering gateway transit</h3><p><strong>Goal:</strong> create complementary peering settings: the hub advertises gateway transit and the spoke consumes the remote gateway.</p><pre class="impl"><code>az network vnet peering update \
+  -g &lt;resource-group&gt; --vnet-name &lt;hub-vnet&gt; \
+  -n &lt;hub-to-spoke-peering&gt; --set allowGatewayTransit=true
+
+az network vnet peering update \
+  -g &lt;resource-group&gt; --vnet-name &lt;spoke-vnet&gt; \
+  -n &lt;spoke-to-hub-peering&gt; --set useRemoteGateways=true
+
+az network nic show-effective-route-table \
+  -g &lt;resource-group&gt; -n &lt;spoke-vm-nic&gt; -o table</code></pre><div class="verify"><strong>Verification:</strong> the spoke NIC’s effective routes should contain the expected on-premises prefixes through the shared gateway. If not, check the directional peering flags before troubleshooting NSGs or applications.</div></div>`,
+6:`<div class="implementation-lab"><h3>Implementation lab — Standard Load Balancer HA Ports</h3><p><strong>Goal:</strong> create an all-protocol, all-port rule for transit NVAs. Frontend and backend port 0 mean “any port” for an HA Ports rule.</p><pre class="impl"><code>az network lb rule create \
+  -g &lt;resource-group&gt; --lb-name &lt;internal-lb&gt; \
+  -n ha-ports-rule --protocol All \
+  --frontend-port 0 --backend-port 0 \
+  --frontend-ip-name &lt;frontend-ip-config&gt; \
+  --backend-pool-name &lt;nva-backend-pool&gt; \
+  --probe-name &lt;health-probe&gt;
+
+az network lb rule show -g &lt;resource-group&gt; \
+  --lb-name &lt;internal-lb&gt; -n ha-ports-rule</code></pre><div class="verify"><strong>Verification:</strong> confirm both NVA instances are healthy in the backend pool, then test multiple protocols and both traffic directions. Stateful NVA symmetry is an end-to-end routing property; the HA Ports rule does not by itself guarantee symmetric return routing.</div></div>`,
+7:`<div class="implementation-lab"><h3>Implementation lab — Azure Public DNS DNSSEC</h3><p><strong>Goal:</strong> inspect the public DNS zone and use the current Microsoft DNSSEC workflow to enable signing, then publish the resulting DS records at the parent registrar. Because DNSSEC commands evolve, discover the current CLI surface before changing a production zone.</p><pre class="impl"><code>az network dns zone show -g &lt;resource-group&gt; -n &lt;zone-name&gt;
+az network dns zone --help
+
+# After signing, verify the zone and obtain the DS material documented by Microsoft.
+az network dns zone show -g &lt;resource-group&gt; -n &lt;zone-name&gt; -o json</code></pre><div class="verify"><strong>Verification:</strong> signing the Azure zone is only half the chain of trust. Confirm that the parent contains the correct DS record and test validation from a DNSSEC-validating recursive resolver; a signed child with no correct parent DS is not a complete chain.</div></div>`,
+8:`<div class="implementation-lab"><h3>Implementation lab — Front Door Premium Private Link origin</h3><p><strong>Goal:</strong> add a private-link-enabled origin to a Front Door Premium origin group. The private endpoint request must then be approved on the origin resource.</p><pre class="impl"><code>az afd origin-group create \
+  -g &lt;resource-group&gt; --profile-name &lt;afd-profile&gt; \
+  --origin-group-name &lt;origin-group&gt; \
+  --probe-request-type GET --probe-protocol Https \
+  --probe-path / --probe-interval-in-seconds 60
+
+az afd origin create \
+  -g &lt;resource-group&gt; --profile-name &lt;afd-profile&gt; \
+  --origin-group-name &lt;origin-group&gt; --origin-name &lt;origin-name&gt; \
+  --host-name &lt;origin-fqdn&gt; --origin-host-header &lt;origin-fqdn&gt; \
+  --https-port 443 --enable-private-link true \
+  --private-link-location &lt;region&gt; \
+  --private-link-resource &lt;origin-resource-id&gt; \
+  --private-link-sub-resource-type &lt;subresource&gt;</code></pre><div class="verify"><strong>Verification:</strong> approve the pending private endpoint request on the origin, then check Front Door origin health. Until approval/establishment completes, Front Door cannot reach the origin privately even though the profile and route exist.</div></div>`,
+9:`<div class="implementation-lab"><h3>Implementation lab — Azure Firewall Premium TLS inspection</h3><p><strong>Goal:</strong> inspect the Premium firewall policy and its certificate/trust configuration before enabling TLS inspection on application rules. The certificate authority lifecycle is part of the network design.</p><pre class="impl"><code>az network firewall policy show \
+  -g &lt;resource-group&gt; -n &lt;firewall-policy&gt; -o jsonc
+
+az network firewall policy rule-collection-group list \
+  -g &lt;resource-group&gt; --policy-name &lt;firewall-policy&gt; -o table</code></pre><div class="verify"><strong>Verification:</strong> validate that client devices trust the enterprise CA used by Firewall Premium, then test an allowed HTTPS destination and inspect firewall logs/IDPS telemetry. If TLS breaks while TCP/443 is reachable, investigate certificate trust/SNI/application rules rather than routing first.</div></div>`,
+10:`<div class="implementation-lab"><h3>Implementation lab — VNet Flow Logs + Traffic Analytics</h3><p><strong>Goal:</strong> create a Log Analytics workspace and a VNet-scoped flow log that sends records to storage and Traffic Analytics.</p><pre class="impl"><code>az monitor log-analytics workspace create \
+  -g &lt;resource-group&gt; -n &lt;workspace&gt; -l &lt;region&gt;
+
+az network watcher flow-log create \
+  --location &lt;region&gt; --resource-group &lt;resource-group&gt; \
+  --name &lt;flow-log-name&gt; --vnet &lt;vnet-name&gt; \
+  --storage-account &lt;storage-account&gt; \
+  --traffic-analytics true --workspace &lt;workspace&gt; --interval 10
+
+az network watcher flow-log show \
+  --location &lt;region&gt; --resource-group &lt;resource-group&gt; \
+  --name &lt;flow-log-name&gt;</code></pre><div class="verify"><strong>Verification:</strong> confirm the flow-log resource is enabled, storage is receiving records, and Traffic Analytics data appears after ingestion delay. Flow logs describe observed Layer-4 flows; they do not replace packet capture when payload/handshake details are needed.</div></div>`,
+11:`<div class="implementation-lab"><h3>Implementation lab — Network Watcher IP Flow Verify</h3><p><strong>Goal:</strong> ask Azure which NSG rule would allow or deny one precise five-tuple. This is a diagnostic command, not a synthetic application transaction.</p><pre class="impl"><code>az network watcher test-ip-flow \
+  -g &lt;resource-group&gt; --vm &lt;vm-name&gt; \
+  --direction Inbound --protocol TCP \
+  --local &lt;vm-private-ip&gt;:443 \
+  --remote &lt;client-ip&gt;:50000
+
+az network nic show-effective-nsg \
+  -g &lt;resource-group&gt; -n &lt;vm-nic&gt;</code></pre><div class="verify"><strong>Verification:</strong> record both the Access result and the rule name returned by IP Flow Verify. If it says Allow but the application still fails, move to routing, guest firewall/listener, load balancer, DNS, or application diagnostics instead of continuing to edit NSGs.</div></div>`,
+12:`<div class="implementation-lab"><h3>Implementation lab — Azure Private Link Service</h3><p><strong>Goal:</strong> publish the frontend of an internal Standard Load Balancer as a Private Link Service, then inspect consumer connection requests.</p><pre class="impl"><code>az network private-link-service create \
+  -g &lt;resource-group&gt; -n &lt;pls-name&gt; \
+  --vnet-name &lt;provider-vnet&gt; --subnet &lt;pls-subnet&gt; \
+  --lb-frontend-ip-configs &lt;load-balancer-frontend-resource-id&gt; \
+  --location &lt;region&gt;
+
+az network private-link-service show \
+  -g &lt;resource-group&gt; -n &lt;pls-name&gt;
+az network private-link-service connection list \
+  -g &lt;resource-group&gt; --name &lt;pls-name&gt; -o table</code></pre><div class="verify"><strong>Verification:</strong> approve the intended private endpoint connection and confirm the provider application sees translated source addresses according to Private Link Service behavior. Consumer DNS must resolve the service name to the consumer private endpoint—not to the provider load balancer directly.</div></div>`};
+
+function cleanLesson(lesson){
+  const removeHeads=['Exam and interview takeaways','Summary','Representative verification commands'];
+  [...lesson.querySelectorAll('h3')].forEach(h=>{if(removeHeads.includes(h.textContent.trim())){let n=h.nextElementSibling;h.remove();if(n)n.remove();}});
+  const boiler=[
+    /In advanced Azure design work, those facts have consequences beyond a product checkbox\. ?/g,
+    /The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment\. ?/g,
+    /A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery\. ?/g,
+    /The control plane is responsible for provisioning, policy, adjacency, trust, or endpoint state; the data plane then carries real user packets according to that state\. ?/g,
+    /During incidents, separate those planes deliberately\. ?/g,
+    /A resource can show Succeeded in Azure Resource Manager while the forwarding path is unusable, and a healthy route can coexist with a security or cryptographic failure\. ?/g,
+    /Document the expected state at every control-plane transition and the packet-visible addresses at every data-plane hop\. ?/g,
+    /Trace one representative connection from a named source prefix to a named destination rather than reasoning only from the portal diagram\. ?/g,
+    /At each hop, record source and destination IPs, next hop, policy decision, translation, encryption boundary, and any stateful device\. ?/g,
+    /The return direction deserves its own trace because Azure networking incidents are often asymmetric:[^.]*\. ?/g,
+    /Before making a change, confirm subscription permissions, supported regions and SKUs, address-space compatibility, and the dependencies implied by the feature\. ?/g,
+    /Stage deployment so a known-good path remains available\. ?/g,
+    /Build the first version in the Azure portal if visual confirmation helps, then express repeatable production state in CLI, PowerShell, Bicep, or Terraform where the service supports it\. ?/g,
+    /Capture the old configuration and expected rollback before applying the change\. ?/g,
+    /These layers are related but not interchangeable\. ?/g,
+    /A correct route can still be denied by an NSG or firewall; a permissive security rule cannot repair a missing route; a successful DNS lookup does not prove the backend data path; and a healthy control-plane adjacency does not prove application state\. ?/g,
+    /Where stateful inspection exists, validate forward and return symmetry\. ?/g,
+    /Where redundancy exists, verify that the surviving path has enough capacity and correct policy to carry production load rather than merely checking that the resource is present\. ?/g,
+    /The architecture decision should explicitly weigh scale, blast radius, failure domains, security controls, operational ownership, and troubleshooting complexity\. ?/g,
+    /Managed Azure services can reduce operational burden, while lower-level constructs can offer flexibility at the cost of more routing and lifecycle responsibility\. ?/g,
+    /Document the closest alternative and explain why it was not selected; that decision record becomes valuable during future migrations, audits, and incident reviews\. ?/g,
+    /The team records a pre-change baseline that includes routes, health state, logs, and a real application transaction\. ?/g,
+    /During cutover it validates both low-level network state and user-visible behavior\. ?/g,
+    /It then exercises one controlled failure so the runbook proves recovery instead of only proving initial deployment\. ?/g,
+    /The result is a design that can be operated under pressure rather than one that exists only as an architecture diagram\. ?/g,
+    /Use a layered workflow\. First confirm resource provisioning and the feature-specific control-plane state\. Second inspect effective routes, peer or endpoint state, security decisions, health probes, and service metrics\. Third use Network Watcher, Azure Monitor, firewall or gateway logs, flow logs, and packet capture where appropriate to prove the actual path\. ?/g,
+    /Compare a failing path with a known-good path one variable at a time\. ?/g,
+    /Capture timestamps so route changes, health transitions, and log events can be correlated without guessing\. ?/g
+  ];
+  lesson.querySelectorAll('.article-text').forEach(p=>{let s=p.innerHTML;boiler.forEach(r=>s=s.replace(r,''));p.innerHTML=s.trim();if(!p.textContent.trim())p.remove();});
+  const seen=new Set(); lesson.querySelectorAll('.article-text').forEach(p=>{let t=p.textContent.replace(/\s+/g,' ').trim().toLowerCase();if(seen.has(t)){p.remove()}else seen.add(t);});
+  const id=Number(lesson.id.replace('lesson-','')); const src=lesson.querySelector('.sources'); if(labs[id]) src.insertAdjacentHTML('beforebegin',labs[id]);
+}
+
+fetch(base).then(r=>{if(!r.ok)throw new Error('Base report could not be loaded');return r.text()}).then(html=>{
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  doc.querySelector('header').insertAdjacentHTML('beforeend','<div class="revision-note"><strong>11:47 revision:</strong> redundant boilerplate and repeated conclusions were removed. Each lesson now contains a feature-specific implementation lab with Azure CLI and verification commands. The 12 topics, Azure draw.io/SVG diagrams, Mermaid diagrams, sources, and 50-question quiz are preserved from today’s validated run.</div>');
+  doc.querySelectorAll('.lesson').forEach(cleanLesson);
+  doc.querySelector('style').textContent += ' .implementation-lab{background:#f7fbff;border:1px solid #8fc5e8;border-radius:14px;padding:18px;margin:22px 0}.implementation-lab h3{margin-top:0}.implementation-lab .verify{background:#eef7f1;border-left:4px solid #107c41;padding:10px;margin-top:12px}.revision-note{background:#fff7e6;border-left:5px solid #eaa300;padding:14px;border-radius:8px;margin:16px 0} pre.impl{background:#071d2e;color:#eef8ff}';
+  document.title='Azure Networking Specialty Daily Study Quiz — 2026-09-05 11:47 PT';
+  document.getElementById('loading').remove(); document.getElementById('app').innerHTML=doc.body.innerHTML;
+  doc.querySelectorAll('script').forEach(s=>{if(s.type==='module'){const ns=document.createElement('script');ns.type='module';ns.textContent=s.textContent;document.body.appendChild(ns)}else if(s.textContent){const ns=document.createElement('script');ns.textContent=s.textContent;document.body.appendChild(ns)}});
+}).catch(e=>{document.getElementById('loading').innerHTML='<h1>Unable to load report</h1><p>'+e.message+'</p>'});
+</script></body></html>
