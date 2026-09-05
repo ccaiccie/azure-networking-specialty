@@ -1,5 +1,5 @@
 AZURE NETWORKING SPECIALTY — DAILY INTERACTIVE STUDY REPORT INSTRUCTIONS
-Version: 1.1
+Version: 1.2
 Repository source of truth: ccaiccie/azure-networking-specialty, branch main
 Publication directory: docs/
 Pages base URL: https://ccaiccie.github.io/azure-networking-specialty/
@@ -13,71 +13,55 @@ PREFLIGHT — REQUIRED BEFORE RESEARCH
 1. Fetch this instruction file from main and obey it.
 2. Fetch docs/azure-study-uniqueness-ledger.json from main.
 3. Enforce a rolling 30-calendar-day blocklist. A candidate is prohibited if any primary article URL, scenario article URL, canonical URL, normalized title/topic fingerprint, feature lesson, or source-case fingerprint matches an in-window ledger entry.
-4. Record the preflight timestamp and the list of active blocked fingerprints in the validation section. Do not update the ledger until all validation and fetch-back checks pass.
+4. Record the preflight timestamp and active blocked fingerprints in validation. Do not update the ledger until all validation and fetch-back checks pass.
 
 CONTENT REQUIREMENTS
-- Create one timestamped self-contained interactive HTML report in docs/ named:
-  Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html
-- Include exactly 12 substantive Azure target lessons. Rotate the lessons and source cases across days while preserving the 30-day blocklist.
-- Each lesson MUST be a full, self-contained mini-article, not a short summary, outline, or bullet dump.
-- Each mini-article should normally contain roughly 700–1,200 words of substantive instructional content when the topic supports it. Do not pad with filler merely to meet length.
-- A reader should be able to learn the feature from the report without having to leave the page. Source links remain required for verification, deeper reading, and attribution.
-- Every lesson must include, when relevant to the topic:
-  * a clear introduction and why the feature matters in real Azure network designs
-  * architecture explanation, including control-plane and data-plane roles
-  * packet-flow or traffic-flow walkthrough from source to destination
-  * prerequisites, dependencies, and design assumptions
-  * implementation/configuration guidance using Azure Portal plus concrete Azure CLI, PowerShell, Bicep, or Terraform examples where appropriate
-  * routing, DNS, NAT, security, inspection, and high-availability interactions
-  * design tradeoffs, alternatives, and guidance on when to use or not use the feature
-  * documented limitations, SKUs, scale, regional, zone, gateway, protocol, or availability considerations
-  * realistic enterprise deployment scenario with enough detail to understand the design decision
-  * troubleshooting workflow with concrete verification commands, portal locations, logs, metrics, Network Watcher checks, effective routes, DNS tests, or other relevant diagnostics
-  * common failure modes and how to distinguish them
-  * exam/interview-style takeaways and a concise end-of-lesson summary
-- Avoid lessons that merely restate Microsoft documentation headings. Synthesize the source material into a coherent teaching narrative.
-- Use authoritative Microsoft sources (learn.microsoft.com, microsoft.com, Azure Architecture Center) for technical claims. Cite every lesson with a primary source and a distinct scenario/case source. The primary and scenario URLs must be different and must be tracked separately.
-- Include official Microsoft/Azure-hosted figures only when their direct image URL and referring source page are verified. Do not use unverified, copied, or hotlinked third-party figures.
-- Include Mermaid teaching diagrams where they clarify topology, routing, DNS, private access, inspection, failover, or traffic flow. Mermaid blocks must be syntactically valid.
-- Include a Sources and Uniqueness section that lists all source roles, canonical URLs, fingerprints, and the current 30-day status.
+- Create one timestamped self-contained interactive HTML report in docs/ named Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html.
+- Include exactly 12 substantive Azure target lessons. Rotate lessons and source cases across days while preserving the 30-day blocklist.
+- Every lesson MUST be a full self-contained mini-article, not a summary, outline, or bullet dump.
+- HARD DEPTH GATE: each lesson body must contain at least 700 substantive instructional words, excluding headings, citations, code blocks, quiz text, navigation, and boilerplate. Target 800–1,200 substantive words when the topic supports it. Fail the run if any lesson is below 700 substantive words.
+- A reader must be able to learn the feature without leaving the page. Source links remain required for verification, deeper reading, and attribution.
+- Every lesson must include, when relevant: why it matters; architecture with control/data-plane roles; packet/traffic flow; prerequisites/dependencies; implementation/configuration using Portal plus Azure CLI/PowerShell/Bicep/Terraform examples where appropriate; routing/DNS/NAT/security/inspection/HA interactions; tradeoffs and alternatives; documented limitations/SKUs/scale/region/zone/protocol considerations; realistic enterprise scenario; troubleshooting and verification commands/checks/logs/metrics; common failure modes; exam/interview takeaways; concise summary.
+- Use authoritative Microsoft sources (learn.microsoft.com, microsoft.com, Azure Architecture Center). Every lesson requires a primary source and a distinct scenario/case source; track them separately.
+- Include verified official Microsoft/Azure-hosted figures when useful. Do not use unverified third-party figures.
+
+DRAW.IO + SVG DIAGRAM REQUIREMENTS — HARD GATE
+- For EVERY lesson where architecture, topology, packet flow, routing, DNS, NAT, security inspection, failover, private access, load balancing, observability flow, or service relationships can be visualized, create an original editable draw.io diagram. For this networking report, normally all 12 lessons should have a diagram.
+- Store editable draw.io XML source files under `docs/images/` using a deterministic lesson-specific filename such as `YYYY-MM-DD-HH-MM-L01-topic.drawio`.
+- Use Azure-specific objects/icons from the diagrams.net/draw.io Azure stencil libraries (prefer modern Azure/azure2 constructs). Do not use plain generic boxes when a relevant Azure service stencil/icon exists. Use correct Azure constructs such as ExpressRoute, VPN Gateway, Virtual WAN, Virtual Network, Load Balancer, Azure DNS, Front Door, Azure Firewall, Network Watcher, Private Link, Private Endpoint, Storage/Log Analytics, and other appropriate Azure resources.
+- Diagrams must be colorful, professionally laid out, readable, and teaching-oriented. Use Azure blue plus distinct colors for trust zones/flows. Use containers for VNets/subnets/regions where relevant. Label important traffic flows, protocols, ports, BGP/IPsec/DNS/TLS stages, or control-plane relationships. Avoid clutter and crossing connectors.
+- Export/convert every draw.io diagram to SVG and store the SVG beside the source in `docs/images/` with the same base filename.
+- The SVG must be directly viewable in a browser and preserve readable labels and flow direction. Do not rasterize the diagram into the SVG.
+- Embed each lesson’s SVG in the HTML near the architecture/traffic-flow explanation using a relative `images/<filename>.svg` reference and meaningful alt text/caption. The report must remain understandable if Mermaid is unavailable.
+- Keep Mermaid teaching diagrams as a complementary representation when useful; draw.io/SVG does NOT replace the Mermaid requirement. Prefer at least one Mermaid block per lesson plus the draw.io/SVG diagram.
+- Validate every referenced draw.io and SVG asset after commit: both files exist, SVG returns valid `<svg>` content, HTML references the correct relative path, and each diagram is associated with the intended lesson.
+- Fail validation if a relevant lesson lacks its draw.io source, SVG export, or embedded HTML reference, or if the diagram uses only generic shapes where Azure stencil objects are available.
 
 TOPIC COVERAGE FOR EACH DAILY REPORT
-The 12 lessons must be Azure networking focused and collectively cover:
+The 12 lessons must collectively cover:
 1. Hybrid connectivity and architecture: Virtual WAN, hub/spoke transit, VPN Gateway, ExpressRoute, FastPath, Route Server, BGP.
 2. Core networking infrastructure: VNets, subnets, IP addressing, DNS, Standard Load Balancer, Application Gateway, Front Door/Traffic Manager as appropriate.
 3. Routing and traffic management: system routes, UDRs, BGP propagation, routing intent, effective routes, load-balancing/traffic-steering decisions.
 4. Security, monitoring, and private service access: NSGs/ASGs, Azure Firewall, WAF, DDoS Protection, Private Link/private endpoints, Azure DNS private resolution, Network Watcher/Connection Monitor.
 
 QUIZ REQUIREMENTS
-- Include exactly 50 automatically gradable single-answer questions, four choices each, with no ambiguous answer.
-- Required 50-question domain distribution:
-  * 15 Hybrid connectivity and architecture
-  * 13 Core networking infrastructure
-  * 10 Routing and traffic management
-  * 12 Security, monitoring, and private service access
-- Every question needs a correct answer, explanation, domain tag, associated lesson, and source link. Randomize option order deterministically at page load; correct-answer mapping must remain accurate.
-- Provide Check answer feedback for every question; Finish and grade control; score, percentage, domain breakdown, unanswered count, answer review, and reset control. The quiz must work without a server-side component.
+- Exactly 50 automatically gradable single-answer questions, four choices each, no ambiguous answer.
+- Required distribution: 15 Hybrid connectivity and architecture; 13 Core networking infrastructure; 10 Routing and traffic management; 12 Security, monitoring, and private service access.
+- Every question needs correct answer, explanation, domain tag, associated lesson, and source link. Randomize option order deterministically while preserving correct-answer mapping.
+- Provide Check answer feedback for every question; Finish and grade; score; percentage; domain breakdown; unanswered count; answer review; reset. No server-side component.
 
-PUBLICATION AND VALIDATION
-1. Update docs/index.html so the latest validated report is prominent and uses the exact GitHub Pages URL:
-   https://ccaiccie.github.io/azure-networking-specialty/<filename>.html
-2. Commit all report, index, and ledger changes to main.
-3. Fetch the committed report, index, and ledger back from GitHub after committing.
-4. Validate and report all of the following:
-   - report exists at exact timestamped path and index points to that exact Pages URL
-   - exactly 12 substantive lessons
-   - every lesson passes article-depth validation and is self-contained rather than a shallow summary
-   - every lesson includes architecture/design detail, an enterprise scenario, and troubleshooting/verification guidance appropriate to the topic
-   - exactly 50 questions and 15/13/10/12 distribution
-   - source-role separation: each lesson's primary URL differs from its scenario URL
-   - valid report quiz controls and feedback/final-grading code
-   - verified official image links; state explicitly if no verified figure is used
-   - Mermaid blocks are present and syntactically valid
-   - all 30-day uniqueness checks pass
-   - fetched ledger includes this run only after successful validation
-5. If any validation fails, do not send email and do not advance the ledger.
+PRECOMMIT VALIDATION
+Before publication, record and validate: 12 lessons; each lesson >=700 substantive words; >=12 Mermaid blocks with at least one per lesson when applicable; 12 distinct primary/scenario pairs; 30-day uniqueness; required draw.io/SVG assets; valid SVG markup; HTML image references; exactly 50 questions with 15/13/10/12 distribution and working quiz controls. If any check fails, stop without publishing, updating index, advancing ledger, or emailing.
+
+PUBLICATION AND FETCH-BACK VALIDATION
+1. Commit report and all `docs/images/` diagram source/export files to main.
+2. Update docs/index.html so the latest validated report is prominent and uses exact Pages URL https://ccaiccie.github.io/azure-networking-specialty/<filename>.html.
+3. Fetch committed report, index, ledger, and diagram assets back from GitHub.
+4. Revalidate exact path/index URL; 12 deep lessons; per-lesson word counts; architecture/scenario/troubleshooting coverage; 50 questions and 15/13/10/12 distribution; source-role separation; quiz controls/final grading; verified official figures; Mermaid; draw.io/SVG asset pairs and HTML references; and 30-day uniqueness.
+5. Advance the uniqueness ledger only after report/index/assets fetch-back validation succeeds; fetch the updated ledger back and confirm the run exists.
+6. If any validation fails, do not email and do not advance the ledger.
 
 EMAIL AFTER SUCCESS ONLY
-Use the connected Gmail account to send an HTML email to both delivery recipients.
+Use connected Gmail to send an HTML email to both recipients.
 Subject: Azure Networking Specialty Daily Study Quiz — YYYY-MM-DD-HH-MM
-The email must include the exact GitHub Pages report link as both a clickable and visible copyable URL, the 12 short topic summaries, validation results including article-depth validation, and the 30-day uniqueness status. Confirm Gmail reports SENT before stating that the run succeeded.
+Include exact clickable + visible Pages URL, 12 short topic summaries, per-lesson word counts, validation results including article-depth and diagram validation, number of draw.io/SVG diagrams, and 30-day uniqueness status. Confirm Gmail reports SENT before stating success.
