@@ -16,6 +16,8 @@ table{width:100%;border-collapse:collapse;font-size:.9rem} th,td{border:1px soli
 .choice{display:block;padding:9px 11px;margin:7px 0;border:1px solid var(--line);border-radius:8px} button{background:var(--accent);color:white;border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;margin:6px 6px 6px 0} button.secondary{background:#596875}
 .feedback{min-height:1.4em;margin-top:8px;font-weight:700} .ok{color:var(--ok)} .bad{color:var(--bad)} .result{white-space:pre-wrap;background:#f0f7f2;padding:14px;border-radius:10px}
 details{margin:12px 0} code{overflow-wrap:anywhere} @media(max-width:720px){main{padding:12px} .lesson,.panel,.question,header{padding:18px} table{font-size:.78rem}}
+
+.lesson-diagram{margin:24px 0;padding:16px;background:#f7fbff;border:1px solid #b9d6ea;border-radius:14px}.lesson-diagram img{display:block;width:100%;height:auto;max-height:620px}.lesson-diagram figcaption{margin-top:10px;color:#536779;font-size:.92rem}.diagram-links{font-size:.85rem;margin-top:8px}
 </style>
 <script type="module">
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -57,7 +59,7 @@ KV[Azure Key Vault CAK/CKN] -. retrieval .-&gt; M1
 KV -. retrieval .-&gt; M2
 M1 --&gt; ER[ExpressRoute]
 M2 --&gt; ER
-ER --&gt; V[Azure VNets]</pre>
+ER --&gt; V[Azure VNets]</pre><figure class="lesson-diagram" data-lesson="1"><img src="images/2026-09-05-08-00-L01-expressroute-direct-macsec.svg" alt="ExpressRoute Direct MACsec architecture"><figcaption><strong>Azure architecture diagram:</strong> ExpressRoute Direct MACsec architecture. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L01-expressroute-direct-macsec.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L01-expressroute-direct-macsec.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>ExpressRoute is private connectivity, but traffic is not encrypted by default. MACsec operates at Layer 2 and is available for ExpressRoute Direct, not provider-provisioned circuits. In advanced Azure design work, those facts have consequences beyond a product checkbox. ExpressRoute Direct has two physical ports; MACsec can be enabled one port at a time to reduce disruption. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. Customer-managed CAK and CKN secret material is stored in Azure Key Vault and must match the customer router. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -93,7 +95,7 @@ CE-&gt;&gt;AZ: IKE proposals
 AZ--&gt;&gt;CE: Selected IKE policy
 CE-&gt;&gt;AZ: IKE_AUTH + selectors
 AZ--&gt;&gt;CE: CHILD_SA
-CE-&gt;&gt;AZ: Encrypted traffic</pre>
+CE-&gt;&gt;AZ: Encrypted traffic</pre><figure class="lesson-diagram" data-lesson="2"><img src="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.svg" alt="Custom IPsec/IKE policy negotiation and traffic flow"><figcaption><strong>Azure architecture diagram:</strong> Custom IPsec/IKE policy negotiation and traffic flow. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L02-custom-ipsec-ike-policy.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>A custom IPsec/IKE policy controls IKE encryption, integrity, DH group, IPsec transforms, PFS, SA lifetime, and data-size lifetime. IKE establishes and authenticates the control relationship; the CHILD_SA carries protected application traffic. In advanced Azure design work, those facts have consequences beyond a product checkbox. The remote device must support a compatible proposal set; stronger algorithms do not help if one peer cannot negotiate them. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. UsePolicyBasedTrafficSelectors exists for devices that cannot use the normal any-to-any route-based selector behavior. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -129,7 +131,7 @@ P1 --&gt; L1[Metro site A]
 P2 --&gt; L2[Metro site B]
 L1 --&gt; ER[Metro circuit]
 L2 --&gt; ER
-ER --&gt; AZ[Azure]</pre>
+ER --&gt; AZ[Azure]</pre><figure class="lesson-diagram" data-lesson="3"><img src="images/2026-09-05-08-00-L03-expressroute-metro.svg" alt="ExpressRoute Metro site-diverse topology"><figcaption><strong>Azure architecture diagram:</strong> ExpressRoute Metro site-diverse topology. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L03-expressroute-metro.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L03-expressroute-metro.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>A standard ExpressRoute circuit has two links at one peering location and therefore still has a site-level failure domain. ExpressRoute Metro splits a single circuit across two distinct peering locations in the same metropolitan area. In advanced Azure design work, those facts have consequences beyond a product checkbox. Microsoft positions Metro as high resiliency: stronger than standard single-site resiliency but below maximum resiliency with separate circuits and locations. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. Both paths use independent BGP adjacencies and should advertise equivalent production prefixes unless policy intentionally differs. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -163,7 +165,7 @@ LAN[On-prem LAN] --&gt; VPN[On-prem VPN]
 VPN == IPsec over ER ==&gt; ER[ExpressRoute]
 ER --&gt; HUB[Virtual WAN hub]
 HUB --&gt; VGW[VPN gateway private IP]
-VGW --&gt; V[Connected VNets]</pre>
+VGW --&gt; V[Connected VNets]</pre><figure class="lesson-diagram" data-lesson="4"><img src="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.svg" alt="IPsec over ExpressRoute with Virtual WAN"><figcaption><strong>Azure architecture diagram:</strong> IPsec over ExpressRoute with Virtual WAN. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L04-ipsec-over-expressroute-vwan.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>ExpressRoute provides private transport but is not itself end-to-end encrypted. Virtual WAN can carry an IPsec tunnel over ExpressRoute private peering so the underlay is private and the overlay is encrypted. In advanced Azure design work, those facts have consequences beyond a product checkbox. The Virtual WAN hub needs the appropriate ExpressRoute and VPN gateway capabilities. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. The VPN connection can use Azure private IP addresses so IKE/IPsec packets traverse private peering instead of the public Internet. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -197,7 +199,7 @@ ONP[On-premises] --&gt; GW[Hub gateway]
 GW --&gt; H[Hub VNet]
 H &lt;--&gt;|allow gateway transit / use remote gateway| S1[Spoke 1]
 H &lt;--&gt;|allow gateway transit / use remote gateway| S2[Spoke 2]
-S1 -. nontransitive by default .- S2</pre>
+S1 -. nontransitive by default .- S2</pre><figure class="lesson-diagram" data-lesson="5"><img src="images/2026-09-05-08-00-L05-gateway-transit.svg" alt="VNet peering gateway transit"><figcaption><strong>Azure architecture diagram:</strong> VNet peering gateway transit. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L05-gateway-transit.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L05-gateway-transit.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>VNet peering provides direct private connectivity over Microsoft’s backbone but is nontransitive by default. Gateway transit lets a spoke use a VPN or ExpressRoute gateway in a peered hub. In advanced Azure design work, those facts have consequences beyond a product checkbox. Peering is represented by two directional resources and gateway settings must be complementary on hub and spoke sides. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. The hub side allows its gateway to forward traffic; the spoke side enables use of the remote gateway. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -232,7 +234,7 @@ FE --&gt;|5-tuple| N1[NVA 1]
 FE --&gt;|5-tuple| N2[NVA 2]
 N1 --&gt; DST[Destination]
 N2 --&gt; DST
-DST --&gt; FE</pre>
+DST --&gt; FE</pre><figure class="lesson-diagram" data-lesson="6"><img src="images/2026-09-05-08-00-L06-load-balancer-ha-ports.svg" alt="Standard Load Balancer HA Ports for NVAs"><figcaption><strong>Azure architecture diagram:</strong> Standard Load Balancer HA Ports for NVAs. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L06-load-balancer-ha-ports.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L06-load-balancer-ha-ports.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>HA Ports is an internal Standard Load Balancer rule that can load-balance flows across all ports instead of one rule per application port. The primary use case is transit NVAs such as firewalls, VPN appliances, and SD-WAN devices. In advanced Azure design work, those facts have consequences beyond a product checkbox. Distribution is per flow using source IP, source port, destination IP, destination port, and protocol. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. Health probes determine which backend NVA instances are eligible for new flows. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -267,7 +269,7 @@ ROOT --&gt; TLD[TLD]
 TLD --&gt;|DS| AZ[Azure Public DNS signed zone]
 AZ --&gt;|DNSKEY + RRSIG + answer| R
 R --&gt; C[Validated client answer]
-BAD[Spoofed response] -. rejected .-&gt; R</pre>
+BAD[Spoofed response] -. rejected .-&gt; R</pre><figure class="lesson-diagram" data-lesson="7"><img src="images/2026-09-05-08-00-L07-azure-dns-dnssec.svg" alt="Azure Public DNS DNSSEC chain of trust"><figcaption><strong>Azure architecture diagram:</strong> Azure Public DNS DNSSEC chain of trust. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L07-azure-dns-dnssec.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L07-azure-dns-dnssec.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>DNSSEC authenticates DNS data and detects tampering; it does not encrypt DNS queries or responses. Azure Public DNS can sign a hosted public zone and manages generated DNSSEC records such as DNSKEY, RRSIG, and NSEC. In advanced Azure design work, those facts have consequences beyond a product checkbox. A parent DS record links the child zone into the public chain of trust. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. A zone can be signed in Azure but remain signed-but-not-delegated until the DS is published at the parent or registrar. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -301,7 +303,7 @@ U[Internet users] --&gt; POP[Front Door global POP]
 POP --&gt; RC[Regional cluster]
 RC --&gt; PE[Managed private endpoint]
 PE == Private Link ==&gt; O[Private origin]
-O -. direct public access disabled .- X[Internet]</pre>
+O -. direct public access disabled .- X[Internet]</pre><figure class="lesson-diagram" data-lesson="8"><img src="images/2026-09-05-08-00-L08-front-door-private-link.svg" alt="Front Door Premium Private Link origin path"><figcaption><strong>Azure architecture diagram:</strong> Front Door Premium Private Link origin path. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L08-front-door-private-link.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L08-front-door-private-link.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>Front Door remains the public client entry point; Private Link secures only the Front Door-to-origin leg. Origin Private Link requires Azure Front Door Premium. In advanced Azure design work, those facts have consequences beyond a product checkbox. Front Door creates a private endpoint in a Microsoft-managed regional network and the origin owner approves the connection. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. After approval, user traffic and health probes follow the private path to the origin. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -340,7 +342,7 @@ S--&gt;&gt;F: server certificate
 F--&gt;&gt;C: firewall-issued certificate
 C-&gt;&gt;F: encrypted client leg
 F-&gt;&gt;F: decrypt + inspect
-F-&gt;&gt;S: re-encrypted server leg</pre>
+F-&gt;&gt;S: re-encrypted server leg</pre><figure class="lesson-diagram" data-lesson="9"><img src="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.svg" alt="Azure Firewall Premium TLS inspection"><figcaption><strong>Azure architecture diagram:</strong> Azure Firewall Premium TLS inspection. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L09-firewall-premium-tls-inspection.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>TLS inspection is a Premium feature that decrypts supported HTTPS traffic, applies security inspection, and re-encrypts it. The firewall creates two TLS sessions: client-to-firewall and firewall-to-server. In advanced Azure design work, those facts have consequences beyond a product checkbox. The firewall needs an intermediate CA certificate referenced from Azure Key Vault. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. Production deployments should use a corporate PKI rather than a self-signed test hierarchy. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -374,7 +376,7 @@ V[VNet/subnet/NIC flows] --&gt; FL[Network Watcher VNet Flow Logs]
 FL --&gt; ST[Azure Storage JSON]
 FL --&gt; TA[Traffic Analytics]
 TA --&gt; LAW[Log Analytics]
-LAW --&gt; Q[Queries/workbooks/alerts]</pre>
+LAW --&gt; Q[Queries/workbooks/alerts]</pre><figure class="lesson-diagram" data-lesson="10"><img src="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.svg" alt="VNet Flow Logs and Traffic Analytics pipeline"><figcaption><strong>Azure architecture diagram:</strong> VNet Flow Logs and Traffic Analytics pipeline. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L10-vnet-flow-logs-traffic-analytics.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>Virtual Network Flow Logs record Layer-4 IP-flow metadata and can target VNet, subnet, or NIC scope. Logs are collected by the Azure platform and do not insert a forwarding appliance into the data path. In advanced Azure design work, those facts have consequences beyond a product checkbox. Records include interface identity, five-tuple data, direction, flow state, encryption state, and throughput information. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. Data is written as JSON to Azure Storage, generally in one-minute collection intervals. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -411,7 +413,7 @@ IPV --&gt; ADM[AVNM admin rules]
 NSG1 --&gt; R[Allow/Deny + rule]
 NSG2 --&gt; R
 ADM --&gt; R
-R --&gt; N[If allowed: route/NVA/guest firewall/listener]</pre>
+R --&gt; N[If allowed: route/NVA/guest firewall/listener]</pre><figure class="lesson-diagram" data-lesson="11"><img src="images/2026-09-05-08-00-L11-ip-flow-verify.svg" alt="Network Watcher IP Flow Verify decision path"><figcaption><strong>Azure architecture diagram:</strong> Network Watcher IP Flow Verify decision path. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L11-ip-flow-verify.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L11-ip-flow-verify.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>IP Flow Verify answers whether Azure security/admin rules allow or deny a specific TCP or UDP tuple to or from a VM NIC. It evaluates NSGs on both subnet and NIC plus applicable Virtual Network Manager security admin rules. In advanced Azure design work, those facts have consequences beyond a product checkbox. The result identifies Allowed or Denied and the deciding rule when available. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. It is a control-plane diagnostic, not proof that a real application session succeeded end to end. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
@@ -447,7 +449,7 @@ PE1 == Private Link ==&gt; PLS[Private Link Service]
 PE2 == Private Link ==&gt; PLS
 PLS --&gt; NAT[Provider NAT IP pool]
 NAT --&gt; ILB[Standard Load Balancer]
-ILB --&gt; APP[Provider backends]</pre>
+ILB --&gt; APP[Provider backends]</pre><figure class="lesson-diagram" data-lesson="12"><img src="images/2026-09-05-08-00-L12-private-link-service.svg" alt="Azure Private Link Service provider architecture"><figcaption><strong>Azure architecture diagram:</strong> Azure Private Link Service provider architecture. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="images/2026-09-05-08-00-L12-private-link-service.drawio">Editable draw.io source</a> · <a href="images/2026-09-05-08-00-L12-private-link-service.svg">Open SVG</a></div></figure>
 <h3>Why this matters</h3>
 <div class='article-text'>Private Link Service is the provider-side feature for publishing a customer-owned service through Azure Private Link. The established pattern uses a Standard Load Balancer frontend in the provider VNet. In advanced Azure design work, those facts have consequences beyond a product checkbox. Consumers create private endpoints using the service alias or resource ID and the provider approves or rejects the connection. The engineer should define the precise trust boundary, failure boundary, and ownership boundary before deployment. The provider controls visibility through RBAC, subscription restrictions, or broader alias-based request exposure. A strong design also states what the feature does not solve, so operators do not confuse provisioning success with successful packet delivery.</div>
 <h3>Architecture: control plane versus data plane</h3>
