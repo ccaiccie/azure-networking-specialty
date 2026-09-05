@@ -1,0 +1,51 @@
+name: Inject Azure lesson diagrams
+on:
+  push:
+    paths:
+      - '.github/workflows/inject-azure-diagrams.yml'
+permissions:
+  contents: write
+jobs:
+  inject:
+    if: ${{ !contains(github.event.head_commit.message, '[diagram-inject]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Inject SVG figures and validate assets
+        shell: python
+        run: |
+          from pathlib import Path
+          report=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-05-08-00.html')
+          html=report.read_text()
+          names=[
+          'expressroute-direct-macsec','custom-ipsec-ike-policy','expressroute-metro','ipsec-over-expressroute-vwan','gateway-transit','load-balancer-ha-ports','azure-dns-dnssec','front-door-private-link','firewall-premium-tls-inspection','vnet-flow-logs-traffic-analytics','ip-flow-verify','private-link-service']
+          titles=[
+          'ExpressRoute Direct MACsec architecture','Custom IPsec/IKE policy negotiation and traffic flow','ExpressRoute Metro site-diverse topology','IPsec over ExpressRoute with Virtual WAN','VNet peering gateway transit','Standard Load Balancer HA Ports for NVAs','Azure Public DNS DNSSEC chain of trust','Front Door Premium Private Link origin path','Azure Firewall Premium TLS inspection','VNet Flow Logs and Traffic Analytics pipeline','Network Watcher IP Flow Verify decision path','Azure Private Link Service provider architecture']
+          css='\n.lesson-diagram{margin:24px 0;padding:16px;background:#f7fbff;border:1px solid #b9d6ea;border-radius:14px}.lesson-diagram img{display:block;width:100%;height:auto;max-height:620px}.lesson-diagram figcaption{margin-top:10px;color:#536779;font-size:.92rem}.diagram-links{font-size:.85rem;margin-top:8px}\n'
+          if '.lesson-diagram{' not in html:
+              html=html.replace('</style>',css+'</style>',1)
+          for i,(name,title) in enumerate(zip(names,titles),1):
+              svg=f'images/2026-09-05-08-00-L{i:02d}-{name}.svg'
+              dio=f'images/2026-09-05-08-00-L{i:02d}-{name}.drawio'
+              for p in (Path('docs')/svg,Path('docs')/dio):
+                  if not p.exists(): raise SystemExit(f'Missing {p}')
+              if not (Path('docs')/svg).read_text().lstrip().startswith('<svg'):
+                  raise SystemExit(f'Invalid SVG {svg}')
+              marker=f'<figure class="lesson-diagram" data-lesson="{i}"><img src="{svg}" alt="{title}"><figcaption><strong>Azure architecture diagram:</strong> {title}. Color-coded vector SVG exported from the editable Azure-stencil draw.io source.</figcaption><div class="diagram-links"><a href="{dio}">Editable draw.io source</a> · <a href="{svg}">Open SVG</a></div></figure>'
+              if marker in html: continue
+              start=html.index(f'id="lesson-{i}"')
+              end=html.index('</pre>',start)+6
+              html=html[:end]+marker+html[end:]
+          if html.count('class="lesson-diagram"') != 12: raise SystemExit('Expected 12 lesson diagrams')
+          if html.count('<pre class="mermaid">') < 12: raise SystemExit('Expected at least 12 Mermaid blocks')
+          report.write_text(html)
+      - name: Commit visual enhancement
+        run: |
+          git config user.name "azure-study-bot"
+          git config user.email "azure-study-bot@users.noreply.github.com"
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-05-08-00.html
+          git diff --cached --quiet && exit 0
+          git commit -m "[diagram-inject] Embed Azure draw.io SVG diagrams in Sep 5 report"
+          git push origin main
