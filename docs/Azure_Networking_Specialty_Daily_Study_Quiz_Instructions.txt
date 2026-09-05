@@ -1,5 +1,5 @@
 AZURE NETWORKING SPECIALTY — DAILY INTERACTIVE STUDY REPORT INSTRUCTIONS
-Version: 1.3
+Version: 1.4
 Repository source of truth: ccaiccie/azure-networking-specialty, branch main
 Publication directory: docs/
 Pages base URL: https://ccaiccie.github.io/azure-networking-specialty/
@@ -7,60 +7,82 @@ Delivery recipients: mikewissa@yahoo.com; mwissa@osidigital.com
 Schedule: daily at 08:00 America/Los_Angeles
 
 PURPOSE
-Create a rigorous, blueprint-based Azure networking professional-development report. “Azure Networking Specialty” is the study-series name; verify current Microsoft certification status and align to the current Azure networking role/skills outline (including AZ-700 / Azure Network Engineer Associate when current).
+Create a rigorous, blueprint-based Azure networking professional-development report. “Azure Networking Specialty” is the study-series name; verify current Microsoft certification status and align to the current Azure networking role/skills outline, including AZ-700 / Azure Network Engineer Associate when current.
 
 PREFLIGHT
 1. Fetch and obey this file from main.
 2. Fetch docs/azure-study-uniqueness-ledger.json.
 3. Enforce the rolling 30-calendar-day blocklist across primary/scenario/canonical URLs, title/topic fingerprints, feature lessons, and source-case fingerprints.
-4. Do not update the ledger until all publication and fetch-back validation passes.
+4. Do not update the ledger until all publication/fetch-back validation passes.
 
 CONTENT — HARD GATES
-- Create one timestamped self-contained HTML report in docs/ named Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html.
-- Include exactly 12 substantive Azure networking lessons. Each lesson must contain at least 700 substantive instructional words excluding headings, citations, code blocks, quiz text, navigation, and boilerplate; target 800–1,200 when useful.
-- A reader must be able to thoroughly understand the topic without opening source links.
+- Create one timestamped self-contained static HTML report in docs/ named Azure_Networking_Specialty_Daily_Study_Quiz_YYYY-MM-DD-HH-MM.html.
+- Do NOT build the report as a wrapper that fetches and rewrites another HTML page at runtime. The report itself must contain its lesson content, styles, diagrams, implementation examples, and quiz logic.
+- Exactly 12 substantive Azure networking lessons and exactly 50 automatically gradable questions.
+- Each lesson must contain at least 700 substantive instructional words excluding headings, citations, code, quiz text, navigation, and boilerplate; target 800–1,200 when useful.
+- Desktop/regular-browser readability is the priority. Mobile-specific styling is not required.
 
 NON-REDUNDANCY — HARD GATE
-- Do not inflate word count by repeating the same fact in multiple sections. Every paragraph must add a new concept, consequence, example, implementation detail, limitation, diagnostic technique, comparison, or synthesis.
-- Give each fact one primary home. “Why it matters” explains the design problem; “Architecture” explains components/control plane/data plane; “Packet flow” walks a concrete flow; “Implementation lab” deploys/configures it; “Interactions” covers adjacent routing/DNS/NAT/security/HA behavior; “Tradeoffs” compares alternatives; “Scenario” applies it; “Troubleshooting” diagnoses it; “Takeaways/Summary” synthesize without re-copying earlier paragraphs.
-- Do not reuse sentences or near-identical paragraphs within a lesson. Avoid generic boilerplate repeated across lessons (for example, identical statements about checking routes, NSGs, or control plane vs data plane). Tailor troubleshooting and implementation to the actual feature.
-- Precommit validation must flag obvious duplicated/near-duplicated prose within each lesson. Fail the run if substantive sections merely restate earlier content.
+- Thoroughness must come from new technical detail, not repetition. Every paragraph must add a new concept, consequence, implementation detail, limitation, diagnostic technique, design comparison, or scenario insight.
+- Give each fact one primary home. Do not restate the same product facts under Why it matters, Architecture, Prerequisites, Interactions, Troubleshooting, and closing sections.
+- Do not repeat generic boilerplate across lessons. Troubleshooting, verification, configuration, and tradeoffs must be feature-specific.
+- Remove generic “Exam and interview takeaways” and “Summary” sections entirely.
+- Do not force every lesson to use identical headings. Use only sections that are relevant to that topic.
+- Precommit validation must flag obvious duplicated or near-duplicated prose within each lesson. Fail the run if sections largely restate earlier material.
 
-REQUIRED LESSON STRUCTURE
-Each lesson must include as applicable: design problem/why it matters; detailed architecture and control-plane/data-plane roles; concrete packet/traffic flow; prerequisites/dependencies; implementation; routing/DNS/NAT/security/inspection/HA interactions; documented limitations/SKUs/scale/regions/zones/protocols; alternatives/tradeoffs; realistic enterprise scenario; feature-specific troubleshooting/verification; common failure modes; exam/interview takeaways; concise synthesis.
+LESSON ORGANIZATION
+Required anchor sections:
+1. “Why it matters” — concise statement of the design/operational problem and the value of the feature. Do not repeat this content later.
+2. “Architecture” — topic-specific architecture, including control plane/data plane where that distinction is useful. This section MUST have the lesson’s draw.io/SVG diagram immediately adjacent to it. Mermaid may be included as a complementary view.
+3. “Prerequisites and implementation” — only prerequisites not already explained, followed by real implementation. Do not repeat architecture or Why-it-matters facts here.
+4. “Verification” — commands and representative expected output/state so the learner knows what success looks like.
+5. “Troubleshooting” — commands, likely failure symptoms, and representative expected output/state for common failures.
 
-IMPLEMENTATION LABS — HARD GATE
-- Every lesson must contain an “Implementation lab” section with one or more useful configuration stanzas using Azure CLI and/or Terraform. Use PowerShell/Bicep additionally when they are the best documented interface, but do not substitute vague portal-only steps for code when an Azure CLI or Terraform resource exists.
-- Configuration must directly implement or configure the lesson architecture, not be unrelated boilerplate. Use explicit placeholders such as <resource-group>, <subscription-id>, <vnet-name>, <location>, and explain what must be replaced.
-- Prefer a deploy/configure stanza plus a separate verification stanza (for example az ... show/list, Network Watcher command, route/peer/connection state query, or Terraform output/state inspection).
-- Never invent CLI subcommands, flags, Terraform resource names/arguments, defaults, limits, or outputs. Verify syntax from current Microsoft Learn/Azure CLI docs and HashiCorp AzureRM docs where Terraform is used.
-- If a feature has no safe/direct Azure CLI or Terraform configuration surface, explicitly state that limitation and use the closest officially documented automation interface while still providing CLI commands to inspect/verify the resource.
-- Explain what each important stanza changes in the control/data plane and how to validate success.
+Optional sections only when they add new information: packet/traffic flow; routing interaction; DNS interaction; NAT behavior; security/inspection interaction; availability/failover; tradeoffs/alternatives; enterprise scenario; documented limits/SKUs/scale/regions/zones/protocols. Never include a catch-all “Routing, DNS, security, and availability interactions” section merely to satisfy a template. Include those topics only if they add material not already covered.
+
+IMPLEMENTATION — HARD GATE
+- Every lesson must contain substantially more implementation detail than simple show/list commands.
+- Prefer Azure CLI and/or Terraform configuration that creates or changes the relevant architecture. Use PowerShell/Bicep when they are the best official interface.
+- Include explicit placeholders such as <resource-group>, <subscription-id>, <location>, <vnet-name>, etc., and explain what to replace.
+- Where practical, show prerequisite resource creation plus the feature-specific configuration, not just one isolated command.
+- Never invent CLI subcommands, flags, Terraform resources/arguments/defaults/limits/outputs. Verify syntax from current Microsoft Learn/Azure CLI docs and HashiCorp AzureRM docs.
+- If the feature lacks a direct Azure CLI/Terraform create/update surface, explicitly state that limitation and show the closest supported automation interface plus CLI verification.
+
+VERIFICATION COMMANDS + EXPECTED OUTPUT — HARD GATE
+- The Verification section must show commands plus representative expected output or expected state. Output may be shortened, but it must teach what fields/status values matter.
+- Clearly label sample output as representative, not a guaranteed byte-for-byte response.
+- Examples: ProvisioningState=Succeeded, peeringState=Connected, connectionStatus=Connected, backend health=Healthy, effective route next hop, NSG rule name/Allow result, DNSSEC validation result, flow-log enabled state, Private Link connection status=Approved.
+
+TROUBLESHOOTING COMMANDS + EXPECTED OUTPUT — HARD GATE
+- Troubleshooting must be command-driven and feature-specific. Show the command(s), a representative failing output/state, what it means, and the next corrective action.
+- Do not use generic prose such as “check routes and NSGs” without the exact Azure inspection command and the specific output field/state to examine.
 
 DRAW.IO + SVG — HARD GATE
-- For every relevant lesson (normally all 12), create a colorful professional editable draw.io XML diagram under docs/images/ using relevant diagrams.net Azure/azure2 stencil objects rather than generic boxes when an Azure construct exists.
-- Use correct Azure constructs/icons, meaningful VNet/subnet/region/trust-zone containers, labeled packet/control flows, protocols/ports/BGP/IPsec/DNS/TLS annotations, Azure-style colors, and uncluttered connectors.
-- Export each .drawio to a vector .svg with the same basename in docs/images/. Embed the SVG near the architecture/packet-flow section using a relative images/<file>.svg path, meaningful alt text, and caption. Keep at least one valid Mermaid teaching diagram per lesson as a complementary representation when applicable.
-- Validate after commit that every draw.io and SVG exists, the SVG is valid vector markup, Azure stencil constructs are present, and every HTML reference resolves.
+- For every relevant lesson (normally all 12), create a colorful professional editable draw.io XML diagram under docs/images/ using modern Azure/azure2 stencil objects rather than generic boxes when an Azure construct exists.
+- The SVG exported from the draw.io source must use the same basename, remain vector, and be stored beside the draw.io file in docs/images/.
+- The Architecture section MUST embed the SVG directly in the HTML using a relative images/<file>.svg path, meaningful alt text, caption, and link to the editable draw.io source.
+- Use correct Azure constructs/icons, meaningful VNet/subnet/region/trust-zone containers, labeled packet/control flows, BGP/IPsec/DNS/TLS/port annotations, Azure-style colors, and uncluttered connectors.
+- Keep Mermaid as a complementary representation when it genuinely helps. Draw.io/SVG is the primary architecture visual.
+- Validate after commit that every draw.io/SVG exists, SVG is valid vector markup, Azure stencil constructs are present, and every HTML image reference resolves.
 
 SOURCES
-Use authoritative Microsoft Learn, Microsoft, Azure Architecture Center sources for claims. Every lesson requires a distinct primary source and distinct scenario/case source; track separately. Use current HashiCorp AzureRM documentation when Terraform is included. Official Microsoft-hosted figures may be included only when verified.
+Use authoritative Microsoft Learn, Microsoft, Azure Architecture Center sources for claims. Every lesson requires a distinct primary source and distinct scenario/case source. Use current HashiCorp AzureRM documentation when Terraform is included. Official Microsoft-hosted figures may be included only when verified.
 
 TOPIC COVERAGE
 The 12 lessons collectively cover: (1) Hybrid connectivity/architecture; (2) Core networking infrastructure; (3) Routing/traffic management; (4) Security, monitoring, private service access.
 
 QUIZ
-Exactly 50 automatically gradable single-answer questions, four choices each, no ambiguity. Distribution: 15 Hybrid connectivity and architecture; 13 Core networking infrastructure; 10 Routing and traffic management; 12 Security, monitoring, and private service access. Every question includes answer, explanation, domain, lesson, and source. Deterministically randomize options while preserving mapping. Include per-question Check answer, Finish/grade, score, percentage, domain breakdown, unanswered count, review, and reset.
+Exactly 50 automatically gradable single-answer questions, four choices each, no ambiguity. Distribution: 15 Hybrid connectivity and architecture; 13 Core networking infrastructure; 10 Routing and traffic management; 12 Security, monitoring, and private service access. Every question includes answer, explanation, domain, associated lesson, and source. Deterministically randomize options while preserving mapping. Include per-question Check answer, Finish/grade, score, percentage, domain breakdown, unanswered count, answer review, and reset.
 
 PRECOMMIT VALIDATION
-Before publication validate and record: 12 lessons; each >=700 substantive words; non-redundancy/no padding; an implementation lab in every lesson; verified Azure CLI/Terraform/other automation syntax; feature-specific verification commands; >=12 Mermaid blocks where applicable; distinct source pairs; 30-day uniqueness; expected draw.io/SVG pairs; Azure stencil usage; valid SVG; correct HTML image refs; exactly 50 questions and 15/13/10/12 distribution; functioning quiz controls. If any hard gate fails, do not publish/update index/advance ledger/email.
+Before publication validate and record: 12 lessons; each >=700 substantive words; no duplicated/near-duplicated prose; no generic takeaways/summary sections; only topic-relevant optional sections; substantial implementation config in every lesson; verified CLI/Terraform syntax; Verification commands with representative expected output; Troubleshooting commands with representative failing output and interpretation; draw.io/SVG adjacent to Architecture; Mermaid when useful; distinct source pairs; 30-day uniqueness; exactly 50 questions and 15/13/10/12 distribution; functioning quiz controls. If any hard gate fails, do not publish/update index/advance ledger/email.
 
 PUBLICATION + FETCH-BACK
 1. Commit report and docs/images assets to main.
 2. Update docs/index.html to exact Pages URL https://ccaiccie.github.io/azure-networking-specialty/<filename>.html.
-3. Fetch report, index, diagram assets back and revalidate all depth, non-redundancy, implementation, source, quiz, Mermaid, draw.io/SVG, and uniqueness requirements.
+3. Fetch report, index, and diagram assets back and revalidate all requirements.
 4. Advance the ledger only after report/index/assets fetch-back succeeds; fetch ledger back and confirm run.
 5. Do not email on any validation failure.
 
 EMAIL AFTER SUCCESS
-Send HTML email through connected Gmail to mikewissa@yahoo.com and mwissa@osidigital.com. Include exact clickable+visible Pages URL, 12 topic summaries, per-lesson substantive word counts, implementation-lab validation, non-redundancy validation, draw.io/SVG count/status, quiz validation, and 30-day uniqueness status. Confirm Gmail reports SENT before stating success.
+Send HTML email through connected Gmail to mikewissa@yahoo.com and mwissa@osidigital.com. Include exact clickable+visible Pages URL, 12 topic summaries, per-lesson substantive word counts, non-redundancy validation, implementation/verification/troubleshooting validation, draw.io/SVG status, quiz validation, and 30-day uniqueness status. Confirm Gmail reports SENT before stating success.
