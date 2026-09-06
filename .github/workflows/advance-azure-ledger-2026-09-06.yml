@@ -1,0 +1,51 @@
+name: Advance Azure Ledger 2026-09-06
+on:
+  push:
+    paths:
+      - '.github/workflows/advance-azure-ledger-2026-09-06.yml'
+permissions:
+  contents: write
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify validation and append uniqueness entry
+        shell: python
+        run: |
+          import json, datetime, sys
+          validation_path='docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.validation.json'
+          ledger_path='docs/azure-study-uniqueness-ledger.json'
+          v=json.load(open(validation_path,encoding='utf-8'))
+          if v.get('status')!='PASS': raise SystemExit('Validation record is not PASS')
+          ledger=json.load(open(ledger_path,encoding='utf-8'))
+          prim=[
+          'https://learn.microsoft.com/en-us/azure/expressroute/howto-routing-cli','https://learn.microsoft.com/en-us/azure/expressroute/how-to-routefilter-portal','https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-entra-gateway','https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-about','https://learn.microsoft.com/en-us/azure/dns/dns-alias','https://learn.microsoft.com/en-us/azure/application-gateway/configuration-frontend-ip','https://learn.microsoft.com/en-us/azure/load-balancer/manage','https://learn.microsoft.com/en-us/azure/frontdoor/origin-security','https://learn.microsoft.com/en-us/azure/network-watcher/next-hop-overview','https://learn.microsoft.com/en-us/azure/network-watcher/network-insights-topology','https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview','https://learn.microsoft.com/en-us/azure/firewall/policy-rule-sets']
+          scen=[
+          'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-routing-portal-resource-manager','https://learn.microsoft.com/en-us/azure/expressroute/expressroute-circuit-peerings','https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-client','https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-tag-routes','https://learn.microsoft.com/en-us/azure/dns/tutorial-alias-pip','https://learn.microsoft.com/en-us/azure/application-gateway/quick-create-cli','https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-best-practices','https://learn.microsoft.com/en-us/azure/app-service/overview-access-restrictions','https://learn.microsoft.com/en-us/azure/network-watcher/diagnose-vm-network-routing-problem-cli','https://learn.microsoft.com/en-us/azure/network-watcher/network-insights-overview','https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/configure-waf-custom-rules','https://learn.microsoft.com/en-us/azure/firewall/rule-processing']
+          fps=['expressroute-dual-stack-private-peering-ipv4-ipv6','expressroute-microsoft-peering-route-filters-service-prefix-control','p2s-vpn-microsoft-entra-id-openvpn-remote-access','virtual-wan-route-maps-filter-summarize-tag','azure-dns-alias-resource-lifecycle','application-gateway-private-only-frontend-internal-l7','load-balancer-floating-ip-dsr-guest-loopback','front-door-origin-security-service-tag-fdid','network-watcher-next-hop-route-decision','network-watcher-topology-resource-graph-investigation-map','application-gateway-waf-custom-rule-priority','azure-firewall-policy-rule-processing-hierarchy']
+          lessons=['ExpressRoute dual-stack private peering','ExpressRoute Microsoft peering route filters','Point-to-Site VPN with Microsoft Entra ID and OpenVPN','Virtual WAN Route Maps','Azure DNS alias records','Application Gateway private-only frontend','Azure Load Balancer Floating IP','Secure Front Door public origins with service tag and X-Azure-FDID','Network Watcher Next Hop','Network Watcher Topology','Application Gateway WAF custom rules','Azure Firewall Policy rule processing']
+          cases=['dual-stack-migration-on-existing-expressroute-circuit','selected-microsoft-service-communities-over-microsoft-peering','identity-backed-remote-user-openvpn-to-azure-vnets','vwan-connection-boundary-route-tagging-filtering-summarization','resource-coupled-public-ip-dns-alias-cutover','internal-line-of-business-private-app-gateway','clustered-listener-floating-frontend-loopback','block-front-door-origin-bypass-with-fdid','udr-override-diagnosed-with-next-hop','multi-subscription-network-resource-relationship-investigation','application-specific-waf-custom-rule-control','firewall-policy-priority-first-match-analysis']
+          cutoff=datetime.date(2026,8,8)
+          active=[e for e in ledger['entries'] if datetime.date.fromisoformat(e['local_date'])>=cutoff]
+          blocked_urls=set(); blocked_fp=set(); blocked_lessons=set(); blocked_cases=set()
+          for e in active:
+              for key in ('primary_article_urls','scenario_article_urls','canonical_urls'): blocked_urls.update(e.get(key,[]))
+              for key in ('title_fingerprints','topic_fingerprints'): blocked_fp.update(e.get(key,[]))
+              blocked_lessons.update(e.get('feature_lessons',[])); blocked_cases.update(e.get('source_case_fingerprints',[]))
+          collisions={'urls':sorted((set(prim)|set(scen))&blocked_urls),'fingerprints':sorted(set(fps)&blocked_fp),'lessons':sorted(set(lessons)&blocked_lessons),'cases':sorted(set(cases)&blocked_cases)}
+          if any(collisions.values()): raise SystemExit('Uniqueness collision: '+json.dumps(collisions))
+          run_id='azure-networking-study-2026-09-06-08-01-pacific'
+          if not any(e.get('run_id')==run_id for e in ledger['entries']):
+              entry={'run_id':run_id,'created_at_utc':'2026-09-06T15:01:34Z','local_date':'2026-09-06','local_timezone':'America/Los_Angeles','report_filename':'Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.html','report_url':'https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.html','primary_article_urls':prim,'scenario_article_urls':scen,'canonical_urls':prim+scen,'title_fingerprints':fps,'topic_fingerprints':fps,'feature_lessons':lessons,'source_case_fingerprints':cases,'validation':{'report_fetchback_pre_ledger':'passed','index_fetchback_pre_ledger':'passed','lesson_count':v['lesson_count'],'lesson_substantive_word_counts':v['lesson_substantive_word_counts'],'minimum_lesson_substantive_word_count':v['minimum_lesson_substantive_word_count'],'question_count':v['question_count'],'domain_distribution':v['domain_distribution'],'source_role_separation':'passed','drawio_svg_pairs':v['svg_refs'],'fullwidth_diagrams':'passed','compact_typography':'passed','thirty_day_preflight_blocklist_entries':len(active),'thirty_day_uniqueness':'passed'}}
+              ledger['entries'].append(entry)
+              open(ledger_path,'w',encoding='utf-8').write(json.dumps(ledger,indent=2)+'\n')
+              print('LEDGER_APPENDED',run_id)
+          else: print('LEDGER_ALREADY_PRESENT',run_id)
+      - name: Commit ledger
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/azure-study-uniqueness-ledger.json
+          git diff --cached --quiet || git commit -m "Advance Azure study uniqueness ledger for 2026-09-06"
+          git push
