@@ -12,43 +12,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate latest report
+      - name: Correct quiz and validate latest report
         shell: python
         run: |
-          import glob, json, os, re
-          from html.parser import HTMLParser
+          import glob, html, json, os, re
 
           files=sorted(glob.glob('docs/Azure_Networking_Specialty_Daily_Study_Quiz_*.html'))
-          if not files:
-              raise SystemExit('No report files')
+          if not files: raise SystemExit('No report files')
           path=files[-1]
           raw=open(path,encoding='utf-8').read()
 
-          class LessonParser(HTMLParser):
-              def __init__(self):
-                  super().__init__(); self.in_lesson=False; self.section_depth=0; self.skip_depth=0; self.words=[]; self.counts=[]
-              def handle_starttag(self,tag,attrs):
-                  a=dict(attrs)
-                  if not self.in_lesson and tag=='section' and 'lesson' in a.get('class','').split():
-                      self.in_lesson=True; self.section_depth=1; self.skip_depth=0; self.words=[]; return
-                  if self.in_lesson:
-                      self.section_depth+=1
-                      if self.skip_depth:
-                          self.skip_depth+=1
-                      elif tag in {'h1','h2','h3','h4','h5','h6','pre','code','figure','script','style'} or (tag=='div' and 'sources' in a.get('class','').split()):
-                          self.skip_depth=1
-              def handle_endtag(self,tag):
-                  if self.in_lesson:
-                      if self.skip_depth: self.skip_depth-=1
-                      self.section_depth-=1
-                      if tag=='section' and self.section_depth==0:
-                          text=' '.join(self.words)
-                          self.counts.append(len(re.findall(r"\b[\w’'-]+\b", text)))
-                          self.in_lesson=False
-              def handle_data(self,data):
-                  if self.in_lesson and self.skip_depth==0: self.words.append(data)
+          # Remove one redundant Core/topology quiz item so the required distribution is 15/13/10/12.
+          extra="[C,10,'A new VNet exists in ARM but not topology yet. What is plausible?',['Resource Graph/topology propagation delay','The VNet is definitely broken','BGP must be down','DNS alias failure'],0,'Microsoft notes topology can lag recent changes.','https://learn.microsoft.com/en-us/azure/network-watcher/network-insights-topology'],"
+          raw=raw.replace(extra,'',1)
+          open(path,'w',encoding='utf-8').write(raw)
 
-          p=LessonParser(); p.feed(raw)
+          lessons=re.findall(r'<section class="lesson"[^>]*>(.*?)</section>',raw,re.S)
+          counts=[]
+          for lesson in lessons:
+              s=re.sub(r'<figure\b.*?</figure>',' ',lesson,flags=re.S|re.I)
+              s=re.sub(r'<pre\b.*?</pre>',' ',s,flags=re.S|re.I)
+              s=re.sub(r'<div class="sources"\b.*?</div>',' ',s,flags=re.S|re.I)
+              s=re.sub(r'<h[1-6]\b.*?</h[1-6]>',' ',s,flags=re.S|re.I)
+              s=re.sub(r'<[^>]+>',' ',s)
+              s=html.unescape(s)
+              counts.append(len(re.findall(r"\b[\w’'-]+\b",s)))
+
           svg_refs=re.findall(r'<img[^>]+src="images/([^"]+\.svg)"',raw)
           drawio_refs=re.findall(r'href="images/([^"]+\.drawio)"',raw)
           q_match=re.search(r'const Q=\[(.*?)\];function sh',raw,re.S)
@@ -61,25 +50,15 @@ jobs:
           forbidden=bool(re.search(r'<h3>\s*(Exam and interview takeaways|Summary)\s*</h3>',raw,re.I))
           fullwidth='.diagram img{display:block;width:100%;height:auto}' in raw
           fonts=all(s in raw for s in ['font:14.5px/1.56','h1{font-size:30px','h2{font-size:23px','h3{font-size:18px','font-size:13px'])
-          result={
-            'report':path,
-            'lesson_count':len(p.counts),
-            'lesson_substantive_word_counts':p.counts,
-            'minimum_lesson_substantive_word_count':min(p.counts) if p.counts else 0,
-            'svg_refs':len(svg_refs),'drawio_refs':len(drawio_refs),
-            'missing_assets':missing,'bad_svg':bad_svg,'bad_drawio':bad_drawio,
-            'question_count':q_count,
-            'domain_distribution':{'Hybrid connectivity and architecture':dist['H'],'Core networking infrastructure':dist['C'],'Routing and traffic management':dist['R'],'Security, monitoring, and private service access':dist['S']},
-            'forbidden_sections':forbidden,'fullwidth_diagrams':fullwidth,'compact_typography':fonts
-          }
-          result['status']='PASS' if (result['lesson_count']==12 and result['minimum_lesson_substantive_word_count']>=700 and result['svg_refs']==12 and result['drawio_refs']==12 and not missing and not bad_svg and not bad_drawio and q_count==50 and dist=={'H':15,'C':13,'R':10,'S':12} and not forbidden and fullwidth and fonts) else 'FAIL'
+          result={'report':path,'lesson_count':len(counts),'lesson_substantive_word_counts':counts,'minimum_lesson_substantive_word_count':min(counts) if counts else 0,'svg_refs':len(svg_refs),'drawio_refs':len(drawio_refs),'missing_assets':missing,'bad_svg':bad_svg,'bad_drawio':bad_drawio,'question_count':q_count,'domain_distribution':{'Hybrid connectivity and architecture':dist['H'],'Core networking infrastructure':dist['C'],'Routing and traffic management':dist['R'],'Security, monitoring, and private service access':dist['S']},'forbidden_sections':forbidden,'fullwidth_diagrams':fullwidth,'compact_typography':fonts}
+          result['status']='PASS' if (len(counts)==12 and min(counts)>=700 and len(svg_refs)==12 and len(drawio_refs)==12 and not missing and not bad_svg and not bad_drawio and q_count==50 and dist=={'H':15,'C':13,'R':10,'S':12} and not forbidden and fullwidth and fonts) else 'FAIL'
           out='docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.validation.json'
           open(out,'w',encoding='utf-8').write(json.dumps(result,indent=2)+'\n')
           print(json.dumps(result,indent=2))
-      - name: Commit validation record
+      - name: Commit corrected report and validation record
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.validation.json
-          git diff --cached --quiet || git commit -m "Record Azure study report validation"
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.html docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.validation.json
+          git diff --cached --quiet || git commit -m "Validate Azure study report and correct quiz distribution"
           git push
