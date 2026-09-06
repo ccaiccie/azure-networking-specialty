@@ -1,0 +1,22 @@
+{
+  "report": "docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.html",
+  "lesson_count": 0,
+  "lesson_substantive_word_counts": [],
+  "minimum_lesson_substantive_word_count": 0,
+  "svg_refs": 12,
+  "drawio_refs": 12,
+  "missing_assets": [],
+  "bad_svg": [],
+  "bad_drawio": [],
+  "question_count": 51,
+  "domain_distribution": {
+    "Hybrid connectivity and architecture": 15,
+    "Core networking infrastructure": 14,
+    "Routing and traffic management": 10,
+    "Security, monitoring, and private service access": 12
+  },
+  "forbidden_sections": false,
+  "fullwidth_diagrams": true,
+  "compact_typography": true,
+  "status": "FAIL"
+}
