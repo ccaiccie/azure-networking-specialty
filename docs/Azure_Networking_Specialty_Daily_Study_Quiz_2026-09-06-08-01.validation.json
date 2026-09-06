@@ -2,20 +2,20 @@
   "report": "docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-06-08-01.html",
   "lesson_count": 12,
   "lesson_substantive_word_counts": [
-    637,
-    645,
-    666,
-    659,
-    598,
-    569,
-    539,
-    587,
-    569,
-    597,
-    590,
-    616
+    811,
+    834,
+    862,
+    859,
+    790,
+    758,
+    722,
+    774,
+    749,
+    789,
+    780,
+    804
   ],
-  "minimum_lesson_substantive_word_count": 539,
+  "minimum_lesson_substantive_word_count": 722,
   "svg_refs": 12,
   "drawio_refs": 12,
   "missing_assets": [],
@@ -31,5 +31,5 @@
   "forbidden_sections": false,
   "fullwidth_diagrams": true,
   "compact_typography": true,
-  "status": "FAIL"
+  "status": "PASS"
 }
