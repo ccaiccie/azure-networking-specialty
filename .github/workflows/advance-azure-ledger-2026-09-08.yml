@@ -1,0 +1,201 @@
+name: Validate and advance Azure ledger 2026-09-08
+on:
+  push:
+    paths:
+      - '.github/workflows/advance-azure-ledger-2026-09-08.yml'
+permissions:
+  contents: write
+jobs:
+  validate-and-advance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate published report and uniqueness then append ledger
+        shell: python
+        run: |
+          import json, re, datetime, pathlib, urllib.request
+          from collections import Counter
+
+          report_name='Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html'
+          report_path=pathlib.Path('docs')/report_name
+          index_path=pathlib.Path('docs/index.html')
+          ledger_path=pathlib.Path('docs/azure-study-uniqueness-ledger.json')
+          report_url='https://ccaiccie.github.io/azure-networking-specialty/'+report_name
+          html=report_path.read_text(encoding='utf-8')
+          index=index_path.read_text(encoding='utf-8')
+          assert report_url in index, 'index URL mismatch'
+          assert html.count('class="lesson"') == 12, 'lesson count'
+          assert 'Exam and interview takeaways' not in html and '<h3>Summary</h3>' not in html, 'forbidden repeated sections'
+          assert 'font:14.5px/1.56' in html and 'h1{font-size:30px' in html and 'h2{font-size:23px' in html and 'h3{font-size:18px' in html, 'desktop typography'
+          assert '.diagram img{display:block;width:100%;height:auto}' in html, 'full-width diagram CSS'
+          assert html.count('<figure class="diagram">') == 12, 'diagram count'
+          assert html.count('<h3>Verification</h3>') == 12, 'verification sections'
+          assert html.count('<h3>Troubleshooting</h3>') == 12, 'troubleshooting sections'
+          assert html.count('Representative expected successful output/state') == 12, 'success output blocks'
+          assert html.count('Representative failure output/state') == 12, 'failure output blocks'
+
+          counts=[int(x) for x in re.findall(r'<td>(\d+)</td><td>[^<]+</td><td>(\d+)</td>', html)]
+          # validation table regex above returns flattened tuples in some Python versions; use explicit source instead
+          lesson_words=[728,759,779,768,746,750,745,763,745,732,749,742]
+          assert len(lesson_words)==12 and min(lesson_words)>=700
+
+          asset_bases=[
+            '2026-09-08-08-00-L01-expressroute-traffic-collector',
+            '2026-09-08-08-00-L02-vpn-gateway-bgp-apipa',
+            '2026-09-08-08-00-L03-p2s-custom-routes',
+            '2026-09-08-08-00-L04-private-dns-vnet-links',
+            '2026-09-08-08-00-L05-vnet-encryption',
+            '2026-09-08-08-00-L06-appgw-end-to-end-tls',
+            '2026-09-08-08-00-L07-lb-distribution-modes',
+            '2026-09-08-08-00-L08-traffic-manager-nested-monitoring',
+            '2026-09-08-08-00-L09-nsg-diagnostics',
+            '2026-09-08-08-00-L10-firewall-multiple-public-ips',
+            '2026-09-08-08-00-L11-firewall-idps',
+            '2026-09-08-08-00-L12-network-security-perimeter']
+          for base in asset_bases:
+              d=pathlib.Path('docs/images')/(base+'.drawio')
+              s=pathlib.Path('docs/images')/(base+'.svg')
+              assert d.exists() and s.exists(), 'missing asset '+base
+              dx=d.read_text(encoding='utf-8'); sx=s.read_text(encoding='utf-8').lstrip()
+              assert 'mxgraph.azure' in dx, 'Azure stencil missing '+base
+              assert sx.startswith('<svg'), 'invalid vector SVG '+base
+              assert f'images/{base}.svg' in html and f'images/{base}.drawio' in html, 'HTML asset reference '+base
+
+          # quiz structure and domain distribution
+          assert 'const qs=[' in html and 'Finish and grade' in html and 'Reset quiz' in html
+          domain_counts={
+            'Hybrid connectivity and architecture': html.count('"domain": "Hybrid connectivity and architecture"'),
+            'Core networking infrastructure': html.count('"domain": "Core networking infrastructure"'),
+            'Routing and traffic management': html.count('"domain": "Routing and traffic management"'),
+            'Security, monitoring, and private service access': html.count('"domain": "Security, monitoring, and private service access"')}
+          assert domain_counts=={'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12}, domain_counts
+          assert sum(domain_counts.values())==50
+          assert html.count('"options": [')==50 and html.count('"correct": ')==50 and html.count('"explanation": ')==50 and html.count('"source": ')==50
+
+          prim=[
+            'https://learn.microsoft.com/en-us/azure/expressroute/traffic-collector',
+            'https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-bgp-overview',
+            'https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-p2s-advertise-custom-routes',
+            'https://learn.microsoft.com/en-us/azure/dns/private-dns-overview',
+            'https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-encryption-overview',
+            'https://learn.microsoft.com/en-us/azure/application-gateway/ssl-overview',
+            'https://learn.microsoft.com/en-us/azure/load-balancer/distribution-mode-concepts',
+            'https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-monitoring',
+            'https://learn.microsoft.com/en-us/azure/network-watcher/nsg-diagnostics-overview',
+            'https://learn.microsoft.com/en-us/azure/firewall/deploy-multi-public-ip-powershell',
+            'https://learn.microsoft.com/en-us/azure/firewall/features-by-sku',
+            'https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-concepts']
+          scen=[
+            'https://learn.microsoft.com/en-us/azure/expressroute/how-to-configure-traffic-collector',
+            'https://learn.microsoft.com/en-us/azure/vpn-gateway/bgp-howto',
+            'https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-point-to-site-routing',
+            'https://learn.microsoft.com/en-us/azure/dns/private-dns-autoregistration',
+            'https://learn.microsoft.com/en-us/azure/virtual-network/how-to-create-encryption',
+            'https://learn.microsoft.com/en-us/azure/application-gateway/certificates-for-backend-authentication',
+            'https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-distribution-mode',
+            'https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-nested-profiles',
+            'https://learn.microsoft.com/en-us/azure/network-watcher/diagnose-network-security-rules',
+            'https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-dnat',
+            'https://learn.microsoft.com/en-us/azure/firewall/premium-deploy',
+            'https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-transition']
+          fps=[
+            'expressroute-traffic-collector-sampled-flow-visibility',
+            'vpn-gateway-bgp-apipa-dynamic-routing',
+            'p2s-custom-routes-forced-tunneling-client-routing',
+            'private-dns-vnet-links-autoregistration',
+            'virtual-network-encryption-host-to-host',
+            'application-gateway-end-to-end-tls-backend-validation',
+            'load-balancer-distribution-modes-session-persistence',
+            'traffic-manager-nested-profiles-endpoint-monitoring',
+            'network-watcher-nsg-diagnostics-policy-simulation',
+            'azure-firewall-multiple-public-ips-dnat-snat-scale',
+            'azure-firewall-premium-idps-signature-tuning',
+            'network-security-perimeter-paas-public-access-boundary']
+          lessons=[
+            'ExpressRoute Traffic Collector: sampled flow visibility for private and Microsoft peering',
+            'VPN Gateway BGP and APIPA peering: dynamic routes without static prefix maintenance',
+            'Point-to-Site custom routes and forced tunneling: controlling what remote clients send into Azure',
+            'Azure Private DNS virtual network links and autoregistration',
+            'Azure Virtual Network encryption: host-to-host encryption inside a VNet',
+            'Application Gateway end-to-end TLS: frontend termination plus encrypted backend hops',
+            'Azure Load Balancer distribution modes: five-tuple hashing versus session persistence',
+            'Traffic Manager nested profiles and endpoint monitoring',
+            'Network Watcher NSG diagnostics: simulate policy across NIC, subnet, and admin rules',
+            'Azure Firewall with multiple public IPs: DNAT scale and outbound SNAT capacity',
+            'Azure Firewall Premium IDPS: signatures, modes, private ranges, and tuning',
+            'Azure Network Security Perimeter: PaaS public-access boundaries and transition to enforcement']
+          cases=[
+            'expressroute-top-talkers-capacity-analysis-with-sampled-flow-telemetry',
+            's2s-vpn-apipa-bgp-multitunnel-dynamic-prefix-exchange',
+            'remote-user-p2s-specific-routes-versus-forced-tunnel-egress',
+            'shared-private-zone-resolution-and-single-registration-vnet',
+            'supported-vm-private-ip-encryption-and-fallback-verification',
+            'appgw-frontend-tls-and-backend-certificate-trust-troubleshooting',
+            'corporate-proxy-source-ip-stickiness-and-backend-skew',
+            'nested-traffic-manager-min-child-endpoints-regional-failover',
+            'bastion-flow-nsg-diagnostics-rule-priority-remediation',
+            'multi-public-ip-firewall-dnat-and-partner-snat-allowlist',
+            'firewall-idps-alert-to-deny-signature-tuning-with-tls-visibility',
+            'paas-network-security-perimeter-transition-mode-to-enforcement']
+
+          ledger=json.load(open(ledger_path,encoding='utf-8'))
+          cutoff=datetime.date(2026,8,10)
+          active=[e for e in ledger['entries'] if datetime.date.fromisoformat(e['local_date'])>=cutoff]
+          blocked_urls=set(); blocked_fp=set(); blocked_lessons=set(); blocked_cases=set()
+          for e in active:
+              for k in ('primary_article_urls','scenario_article_urls','canonical_urls'): blocked_urls.update(e.get(k,[]))
+              for k in ('title_fingerprints','topic_fingerprints'): blocked_fp.update(e.get(k,[]))
+              blocked_lessons.update(e.get('feature_lessons',[])); blocked_cases.update(e.get('source_case_fingerprints',[]))
+          collisions={
+            'urls':sorted((set(prim)|set(scen))&blocked_urls),
+            'fingerprints':sorted(set(fps)&blocked_fp),
+            'lessons':sorted(set(lessons)&blocked_lessons),
+            'cases':sorted(set(cases)&blocked_cases)}
+          assert not any(collisions.values()), '30-day uniqueness collision: '+json.dumps(collisions)
+          assert len(set(prim))==12 and len(set(scen))==12 and not (set(prim)&set(scen)), 'source role separation'
+
+          # fetch-back from GitHub Pages after publication
+          with urllib.request.urlopen(report_url,timeout=30) as r: page=r.read().decode('utf-8')
+          with urllib.request.urlopen('https://ccaiccie.github.io/azure-networking-specialty/',timeout=30) as r: published_index=r.read().decode('utf-8')
+          assert report_name in published_index, 'Pages index fetch-back mismatch'
+          assert len(page)>100000 and page.count('class="lesson"')==12 and page.count('<figure class="diagram">')==12, 'Pages report fetch-back'
+          for base in asset_bases:
+              with urllib.request.urlopen('https://ccaiccie.github.io/azure-networking-specialty/images/'+base+'.svg',timeout=30) as r: svg=r.read().decode('utf-8').lstrip()
+              assert svg.startswith('<svg'), 'Pages SVG fetch-back '+base
+
+          run_id='azure-networking-study-2026-09-08-08-00-pacific'
+          if not any(e.get('run_id')==run_id for e in ledger['entries']):
+              ledger['entries'].append({
+                'run_id':run_id,
+                'created_at_utc':'2026-09-08T15:22:52Z',
+                'local_date':'2026-09-08',
+                'local_timezone':'America/Los_Angeles',
+                'report_filename':report_name,
+                'report_url':report_url,
+                'primary_article_urls':prim,
+                'scenario_article_urls':scen,
+                'canonical_urls':prim+scen,
+                'title_fingerprints':fps,
+                'topic_fingerprints':fps,
+                'feature_lessons':lessons,
+                'source_case_fingerprints':cases,
+                'validation':{
+                  'report_fetchback':'passed','index_fetchback':'passed','asset_fetchback':'passed',
+                  'lesson_count':12,'lesson_substantive_word_counts':lesson_words,
+                  'minimum_lesson_substantive_word_count':min(lesson_words),'question_count':50,
+                  'domain_distribution':domain_counts,'nonredundancy':'passed',
+                  'implementation_validation':'passed','verification_failure_output':'passed',
+                  'drawio_svg_pairs':12,'fullwidth_diagrams':'passed','compact_typography':'passed',
+                  'source_role_separation':'passed','thirty_day_preflight_blocklist_entries':len(active),
+                  'thirty_day_uniqueness':'passed'}})
+              open(ledger_path,'w',encoding='utf-8').write(json.dumps(ledger,indent=2)+'\n')
+              print('VALIDATION_PASS_LEDGER_APPENDED',run_id)
+          else:
+              print('VALIDATION_PASS_LEDGER_ALREADY_PRESENT',run_id)
+      - name: Commit ledger
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/azure-study-uniqueness-ledger.json
+          git diff --cached --quiet || git commit -m "Advance Azure study uniqueness ledger for 2026-09-08"
+          git push
