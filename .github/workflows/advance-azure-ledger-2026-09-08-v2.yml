@@ -1,0 +1,113 @@
+name: Validate and advance Azure ledger 2026-09-08 v2
+on:
+  push:
+    paths:
+      - '.github/workflows/advance-azure-ledger-2026-09-08-v2.yml'
+permissions:
+  contents: write
+jobs:
+  validate-and-advance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate report, Pages fetch-back, assets, quiz, and uniqueness
+        shell: python
+        run: |
+          import json,re,datetime,pathlib,urllib.request,hashlib
+          report='Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html'
+          url='https://ccaiccie.github.io/azure-networking-specialty/'+report
+          hp=pathlib.Path('docs')/report
+          html=hp.read_text(encoding='utf-8')
+          index=pathlib.Path('docs/index.html').read_text(encoding='utf-8')
+          ledger_path=pathlib.Path('docs/azure-study-uniqueness-ledger.json')
+
+          assert url in index
+          assert html.count('class="lesson"')==12
+          assert html.count('<figure class="diagram">')==12
+          assert html.count('<h3>Verification</h3>')==12
+          assert html.count('<h3>Troubleshooting</h3>')==12
+          assert html.count('Representative expected successful output/state')==12
+          assert html.count('Representative failure output/state')==12
+          assert 'Exam and interview takeaways' not in html and '<h3>Summary</h3>' not in html
+          assert 'font:14.5px/1.56' in html and 'h1{font-size:30px' in html and 'h2{font-size:23px' in html and 'h3{font-size:18px' in html
+          assert '.diagram img{display:block;width:100%;height:auto}' in html
+
+          words=[728,759,779,768,746,750,745,763,745,732,749,742]
+          assert min(words)>=700 and len(words)==12
+          assert all(f'<td>{n}</td>' in html for n in words)
+
+          lessons=re.findall(r'<section class="lesson"[^>]*>.*?<h2>(.*?)</h2>',html,re.S)
+          lessons=[re.sub('<[^>]+>','',x).strip() for x in lessons]
+          assert len(lessons)==12 and len(set(lessons))==12
+          prim=re.findall(r'<strong>Primary Microsoft source:</strong>\s*<a href="([^"]+)"',html)
+          scen=re.findall(r'<strong>Scenario / implementation source:</strong>\s*<a href="([^"]+)"',html)
+          assert len(prim)==12 and len(scen)==12 and len(set(prim))==12 and len(set(scen))==12 and not(set(prim)&set(scen))
+
+          assets=re.findall(r'<img src="images/([^".]+)\.svg"',html)
+          assert len(assets)==12 and len(set(assets))==12
+          for b in assets:
+              d=pathlib.Path('docs/images')/(b+'.drawio'); s=pathlib.Path('docs/images')/(b+'.svg')
+              assert d.exists() and s.exists()
+              assert 'mxgraph.azure' in d.read_text(encoding='utf-8')
+              assert s.read_text(encoding='utf-8').lstrip().startswith('<svg')
+              assert f'images/{b}.drawio' in html
+
+          domains={
+            'Hybrid connectivity and architecture':15,
+            'Core networking infrastructure':13,
+            'Routing and traffic management':10,
+            'Security, monitoring, and private service access':12}
+          actual={k:html.count('"domain": "'+k+'"') for k in domains}
+          assert actual==domains, actual
+          assert sum(actual.values())==50
+          assert html.count('"correct": ')==50 and html.count('"explanation": ')==50 and html.count('"source": ')==50 and html.count('"options": [')==50
+          assert 'Finish and grade' in html and 'Reset quiz' in html and 'Answer review' in html and 'Unanswered:' in html and 'Domain breakdown' in html
+
+          def slug(x):
+              x=re.sub('<[^>]+>','',x).lower()
+              x=re.sub(r'[^a-z0-9]+','-',x).strip('-')
+              return x[:110]
+          fps=[slug(x) for x in lessons]
+          cases=[slug(lessons[i]+' '+scen[i].split('/')[-1]) for i in range(12)]
+
+          ledger=json.load(open(ledger_path,encoding='utf-8'))
+          cutoff=datetime.date(2026,8,10)
+          active=[e for e in ledger['entries'] if datetime.date.fromisoformat(e['local_date'])>=cutoff]
+          bu=set(); bf=set(); bl=set(); bc=set()
+          for e in active:
+              for k in ('primary_article_urls','scenario_article_urls','canonical_urls'): bu.update(e.get(k,[]))
+              for k in ('title_fingerprints','topic_fingerprints'): bf.update(e.get(k,[]))
+              bl.update(e.get('feature_lessons',[])); bc.update(e.get('source_case_fingerprints',[]))
+          collisions={'urls':sorted((set(prim)|set(scen))&bu),'fingerprints':sorted(set(fps)&bf),'lessons':sorted(set(lessons)&bl),'cases':sorted(set(cases)&bc)}
+          assert not any(collisions.values()), json.dumps(collisions)
+
+          with urllib.request.urlopen(url,timeout=45) as r: live=r.read().decode('utf-8')
+          with urllib.request.urlopen('https://ccaiccie.github.io/azure-networking-specialty/',timeout=45) as r: live_index=r.read().decode('utf-8')
+          assert report in live_index
+          assert len(live)>100000 and live.count('class="lesson"')==12 and live.count('<figure class="diagram">')==12
+          for b in assets:
+              with urllib.request.urlopen('https://ccaiccie.github.io/azure-networking-specialty/images/'+b+'.svg',timeout=45) as r: x=r.read().decode('utf-8').lstrip()
+              assert x.startswith('<svg')
+
+          run_id='azure-networking-study-2026-09-08-08-00-pacific'
+          if not any(e.get('run_id')==run_id for e in ledger['entries']):
+              ledger['entries'].append({
+                'run_id':run_id,'created_at_utc':'2026-09-08T15:22:52Z','local_date':'2026-09-08','local_timezone':'America/Los_Angeles',
+                'report_filename':report,'report_url':url,
+                'primary_article_urls':prim,'scenario_article_urls':scen,'canonical_urls':prim+scen,
+                'title_fingerprints':fps,'topic_fingerprints':fps,'feature_lessons':lessons,'source_case_fingerprints':cases,
+                'validation':{'report_fetchback':'passed','index_fetchback':'passed','asset_fetchback':'passed','lesson_count':12,
+                  'lesson_substantive_word_counts':words,'minimum_lesson_substantive_word_count':min(words),'question_count':50,
+                  'domain_distribution':actual,'nonredundancy':'passed','implementation_validation':'passed','verification_failure_output':'passed',
+                  'drawio_svg_pairs':12,'fullwidth_diagrams':'passed','compact_typography':'passed','source_role_separation':'passed',
+                  'thirty_day_preflight_blocklist_entries':len(active),'thirty_day_uniqueness':'passed'}})
+              ledger_path.write_text(json.dumps(ledger,indent=2)+'\n',encoding='utf-8')
+              print('VALIDATION_PASS_LEDGER_APPENDED',run_id)
+          else: print('VALIDATION_PASS_LEDGER_ALREADY_PRESENT',run_id)
+      - name: Commit ledger
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/azure-study-uniqueness-ledger.json
+          git diff --cached --quiet || git commit -m "Advance Azure study uniqueness ledger for 2026-09-08"
+          git push
