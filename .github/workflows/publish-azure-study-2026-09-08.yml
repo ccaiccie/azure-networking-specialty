@@ -1,0 +1,61 @@
+name: Publish Azure Study 2026-09-08
+on:
+  push:
+    paths:
+      - 'docs/.build/2026-09-08/**'
+      - '.github/workflows/publish-azure-study-2026-09-08.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build static report and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/images
+          base64 -d docs/.build/2026-09-08/report.html.gz.b64 | gunzip > docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html
+          base64 -d docs/.build/2026-09-08/assets.tgz.b64 > /tmp/assets.tgz
+          tar -xzf /tmp/assets.tgz -C docs/images
+      - name: Validate hard structural gates
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html')
+          s=p.read_text(encoding='utf-8')
+          assert len(re.findall(r'<section class="lesson" id="l\d+">',s)) == 12
+          assert s.count('<figure class="diagram">') == 12
+          assert 'Exam and interview takeaways' not in s and '<h3>Summary</h3>' not in s
+          assert 'font:14.5px/1.56' in s and '.diagram img{display:block;width:100%;height:auto}' in s
+          assert 'Exactly 50' in s or '50-question' in s
+          assets=list(Path('docs/images').glob('2026-09-08-08-00-*.drawio'))
+          svgs=list(Path('docs/images').glob('2026-09-08-08-00-*.svg'))
+          assert len(assets)==12 and len(svgs)==12
+          for f in assets:
+              t=f.read_text(encoding='utf-8')
+              assert t.startswith('<mxfile') and 'mxgraph.azure' in t
+          for f in svgs:
+              t=f.read_text(encoding='utf-8')
+              assert t.startswith('<svg') and '<image' not in t
+          print('publish structural validation passed')
+      - name: Update index
+        shell: bash
+        run: |
+          cat > docs/index.html <<'EOF'
+          <!doctype html><html lang="en"><head><meta charset="utf-8"><title>Azure Networking Specialty — Daily Study Reports</title><style>body{margin:0;background:#eef3f8;color:#172b3d;font:14.5px/1.56 "Segoe UI",Arial,sans-serif}main{width:980px;margin:44px auto}article{background:#fff;border:1px solid #cbd7e1;border-top:6px solid #0078d4;padding:26px 30px}h1{font-size:30px;color:#0a3558}h2{font-size:23px;color:#0a3558}a{color:#005ea8;font-weight:700}.box{background:#eef7fd;border-left:4px solid #0078d4;padding:14px 16px}</style></head><body><main><article><h1>Azure Networking Specialty daily study reports</h1><div class="box"><h2>Latest validated report — September 8, 2026</h2><p><a href="https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html">Open today’s Azure Networking Specialty interactive study report</a></p><p><code>https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html</code></p></div></article></main></body></html>
+          EOF
+      - name: Commit publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf docs/.build/2026-09-08
+          git config user.name 'azure-study-bot'
+          git config user.email 'azure-study-bot@users.noreply.github.com'
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html docs/images/2026-09-08-08-00-* docs/index.html docs/.build/2026-09-08
+          git commit -m 'Publish Azure networking study report 2026-09-08 08:00'
+          git push
