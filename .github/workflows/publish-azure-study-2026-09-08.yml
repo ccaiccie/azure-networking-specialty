@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p docs/images
-          base64 -d docs/.build/2026-09-08/report.html.gz.b64 | gunzip > docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html
+          cat docs/.build/2026-09-08/report.part01 docs/.build/2026-09-08/report.part02 docs/.build/2026-09-08/report.part03 docs/.build/2026-09-08/report.part04 | base64 -d | gunzip > docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-08-08-00.html
           base64 -d docs/.build/2026-09-08/assets.tgz.b64 > /tmp/assets.tgz
           tar -xzf /tmp/assets.tgz -C docs/images
       - name: Validate hard structural gates
