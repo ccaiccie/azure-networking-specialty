@@ -1,0 +1,27 @@
+name: Recover Azure 0910 staged build
+on:
+  push:
+    paths:
+      - '.github/workflows/recover-azure-0910.yml'
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct staged gzip payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat docs/.azure0910-build-part-*.b64 | tr -d '\n\r' | base64 -d | gzip -d > docs/.azure0910-recovered.txt
+          echo "Recovered bytes: $(wc -c < docs/.azure0910-recovered.txt)"
+          head -c 120 docs/.azure0910-recovered.txt || true
+      - name: Commit recovered payload
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/.azure0910-recovered.txt
+          git commit -m 'Recover Azure September 10 staged payload' || exit 0
+          git push
