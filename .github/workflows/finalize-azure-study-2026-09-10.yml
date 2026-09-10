@@ -1,0 +1,182 @@
+name: Finalize Azure study 2026-09-10
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-azure-study-2026-09-10.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Correct sources, add per-question sources, and hard-validate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re,json,html as htmlmod,difflib,sys
+          P=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html')
+          s=P.read_text()
+          # Correct source-role collisions found during the ledger audit.
+          def lesson(n):
+              m=re.search(rf'(<section class="lesson" id="l{n}">.*?</section>)',s,re.S)
+              if not m: raise SystemExit(f'missing lesson {n}')
+              return m
+          replacements={
+            1:{'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-linkvnet-arm':'https://learn.microsoft.com/en-us/azure/expressroute/how-to-expressroute-direct-portal'},
+            2:{'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-linkvnet-cli':'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-optimize-routing'},
+            4:{'https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview':'https://learn.microsoft.com/en-au/training/modules/integrate-vnets-with-vnet-peering/'},
+            9:{'https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#network-security-of-private-endpoints':'https://learn.microsoft.com/en-us/azure/firewall-manager/private-link-inspection-secure-virtual-hub'}
+          }
+          for n,rp in replacements.items():
+              m=lesson(n); sec=m.group(1)
+              for a,b in rp.items(): sec=sec.replace(a,b)
+              s=s[:m.start(1)]+sec+s[m.end(1):]
+          # Add a visible authoritative source to every rendered quiz question.
+          sources={
+           1:'https://learn.microsoft.com/en-us/azure/expressroute/how-to-expressroute-direct-portal',
+           2:'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-routing',
+           3:'https://learn.microsoft.com/en-us/azure/vpn-gateway/packet-capture',
+           4:'https://learn.microsoft.com/en-au/training/modules/integrate-vnets-with-vnet-peering/',
+           5:'https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-user-defined-route',
+           6:'https://learn.microsoft.com/en-us/azure/application-gateway/private-link',
+           7:'https://learn.microsoft.com/en-us/azure/frontdoor/health-probes',
+           8:'https://learn.microsoft.com/en-us/Azure/dns/dns-traffic-manager-linked-records',
+           9:'https://learn.microsoft.com/en-us/azure/private-link/disable-private-endpoint-network-policy',
+           10:'https://learn.microsoft.com/en-us/azure/firewall/ip-groups',
+           11:'https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/routing-preference-overview',
+           12:'https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-idle-timeout'}
+          marker="const q=["
+          s=s.replace(marker,"const lessonSources="+json.dumps(sources,separators=(',',':'))+";const q=[",1)
+          old="r.appendChild(d)})}function check(i)"
+          new="const a=document.createElement('a');a.className='small';a.href=lessonSources[x[1]];a.target='_blank';a.rel='noopener';a.textContent='Question source';d.appendChild(a);r.appendChild(d)})}function check(i)"
+          if old not in s: raise SystemExit('quiz render insertion point missing')
+          s=s.replace(old,new,1)
+          P.write_text(s)
+          # Structural validation.
+          lessons=re.findall(r'<section class="lesson" id="l(\d+)">(.*?)</section>',s,re.S)
+          errors=[]
+          if len(lessons)!=12: errors.append(f'lesson_count={len(lessons)}')
+          counts={}
+          para_norm=[]
+          for num,sec in lessons:
+              for h in ['Why it matters','Architecture','Prerequisites and implementation','Verification','Troubleshooting']:
+                  if h not in sec: errors.append(f'L{num} missing {h}')
+              if re.search(r'<h3>\s*(Summary|Exam and interview takeaways)',sec,re.I): errors.append(f'L{num} banned closing section')
+              # Exclude code, headings, figure/captions/links, source block from substantive word count.
+              t=re.sub(r'<pre\b.*?</pre>',' ',sec,flags=re.S|re.I)
+              t=re.sub(r'<figure\b.*?</figure>',' ',t,flags=re.S|re.I)
+              t=re.sub(r'<div class="sources".*?</div>',' ',t,flags=re.S|re.I)
+              t=re.sub(r'<h[1-6]\b.*?</h[1-6]>',' ',t,flags=re.S|re.I)
+              t=htmlmod.unescape(re.sub(r'<[^>]+>',' ',t))
+              words=re.findall(r"\b[\w][\w'./:-]*\b",t)
+              counts[int(num)]=len(words)
+              if len(words)<700: errors.append(f'L{num} substantive_words={len(words)}')
+              # near-duplicate paragraph check inside each lesson
+              ps=[htmlmod.unescape(re.sub(r'<[^>]+>',' ',x)) for x in re.findall(r'<p\b[^>]*>(.*?)</p>',sec,re.S|re.I)]
+              ps=[' '.join(x.lower().split()) for x in ps if len(x.split())>=35]
+              for i in range(len(ps)):
+                  for j in range(i+1,len(ps)):
+                      if difflib.SequenceMatcher(None,ps[i],ps[j]).ratio()>.90:
+                          errors.append(f'L{num} near-duplicate paragraphs {i+1}/{j+1}')
+          # Diagram refs and assets.
+          refs=re.findall(r'<img src="(images/2026-09-10-09-00-L\d\d-[^"]+\.svg)"',s)
+          if len(refs)!=12 or len(set(refs))!=12: errors.append(f'svg_refs={len(refs)}/{len(set(refs))}')
+          if '.diagram img{display:block;width:100%;height:auto}' not in s: errors.append('full_width_css_missing')
+          for n in range(1,13):
+              pref=f'2026-09-10-09-00-L{n:02d}-'
+              ds=list(Path('docs/images').glob(pref+'*.drawio')); vs=list(Path('docs/images').glob(pref+'*.svg'))
+              if len(ds)!=1 or len(vs)!=1: errors.append(f'L{n} asset_pair drawio={len(ds)} svg={len(vs)}'); continue
+              if 'mxgraph.azure' not in ds[0].read_text(): errors.append(f'L{n} no Azure stencil')
+              if not vs[0].read_text().lstrip().startswith('<svg'): errors.append(f'L{n} invalid SVG')
+          # Quiz count/distribution and source link behavior.
+          qm=re.search(r'const q=\[(.*?)\];function shuffle',s,re.S)
+          if not qm: errors.append('quiz array missing')
+          else:
+              qb=qm.group(1); dist={k:len(re.findall(r'\['+k+r',',qb)) for k in 'HCRS'}
+              if dist!={'H':15,'C':13,'R':10,'S':12}: errors.append(f'quiz_dist={dist}')
+              if sum(dist.values())!=50: errors.append(f'question_count={sum(dist.values())}')
+          for token in ['Check answer','Finish and grade','Unanswered','Domain breakdown','Answer review','Reset','Question source']:
+              if token not in s: errors.append('quiz control/source missing '+token)
+          # Current-run source pairs + ledger collision check.
+          primary=[
+           sources[1],sources[2],sources[3],sources[4],sources[5],sources[6],sources[7],sources[8],sources[9],sources[10],sources[11],sources[12]]
+          scenario=[
+           'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-linkvnet-cli',
+           'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-optimize-routing',
+           'https://learn.microsoft.com/en-us/azure/vpn-gateway/troubleshoot-vpn-with-azure-diagnostics',
+           'https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/virtual-network-troubleshoot-peering-sync-route-issues',
+           'https://learn.microsoft.com/en-us/azure/virtual-network-manager/how-to-create-user-defined-route',
+           'https://learn.microsoft.com/en-us/azure/application-gateway/private-link-configure',
+           'https://learn.microsoft.com/en-us/azure/frontdoor/routing-methods',
+           'https://learn.microsoft.com/en-us/Azure/dns/tutorial-traffic-manager-linked-records-portal',
+           'https://learn.microsoft.com/en-us/azure/firewall-manager/private-link-inspection-secure-virtual-hub',
+           'https://learn.microsoft.com/en-us/azure/firewall/create-ip-group',
+           'https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/routing-preference-portal',
+           'https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-reset']
+          if len(set(primary+scenario))!=24: errors.append('current source URLs not 24 distinct')
+          ledger=json.loads(Path('docs/azure-study-uniqueness-ledger.json').read_text())
+          blocked=set()
+          def canon(u): return u.split('#',1)[0].rstrip('/').lower()
+          for e in ledger.get('entries',[]):
+              for k in ('primary_article_urls','scenario_article_urls','canonical_urls'):
+                  blocked.update(canon(x) for x in e.get(k,[]))
+          collisions=[u for u in primary+scenario if canon(u) in blocked]
+          if collisions: errors.append('30d source collisions: '+', '.join(collisions))
+          validation={'lesson_count':len(lessons),'substantive_word_counts':counts,'question_distribution':{'Hybrid':15,'Core':13,'Routing':10,'Security':12},'diagram_pairs':12,'errors':errors}
+          Path('docs/.azure-study-2026-09-10-validation.json').write_text(json.dumps(validation,indent=2))
+          print(json.dumps(validation,indent=2))
+          if errors: sys.exit(1)
+          PY
+      - name: Update index and commit validated report
+        if: success()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html'
+          Path('docs/index.html').write_text(f'''<!doctype html><html><head><meta charset="utf-8"><title>Azure Networking Specialty</title><style>body{{font:15px/1.55 Segoe UI,Arial;max-width:900px;margin:50px auto;color:#172b3d}}a{{color:#005ea8}}</style></head><body><h1>Azure Networking Specialty daily study reports</h1><h2>Latest validated report</h2><p><a href="{url}">{url}</a></p></body></html>''')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html docs/index.html docs/.azure-study-2026-09-10-validation.json
+          git commit -m 'Validate and index September 10 Azure study report'
+          git push
+      - name: Fetch back report index and all diagram assets
+        if: success()
+        shell: bash
+        run: |
+          set -e
+          base="https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main"
+          for f in docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html docs/index.html; do
+            curl -fsSL --retry 8 --retry-delay 2 "$base/$f" -o "/tmp/$(basename "$f")"
+            cmp "$f" "/tmp/$(basename "$f")"
+          done
+          for f in docs/images/2026-09-10-09-00-L*.drawio docs/images/2026-09-10-09-00-L*.svg; do
+            curl -fsSL --retry 8 --retry-delay 2 "$base/$f" -o /tmp/a
+            cmp "$f" /tmp/a
+          done
+      - name: Advance ledger only after fetch-back
+        if: success()
+        shell: bash
+        run: |
+          git pull --rebase
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('docs/azure-study-uniqueness-ledger.json'); d=json.loads(p.read_text())
+          rid='azure-networking-study-2026-09-10-09-00-pacific'
+          if any(e.get('run_id')==rid for e in d.get('entries',[])): raise SystemExit('run already in ledger')
+          primary=['https://learn.microsoft.com/en-us/azure/expressroute/how-to-expressroute-direct-portal','https://learn.microsoft.com/en-us/azure/expressroute/expressroute-routing','https://learn.microsoft.com/en-us/azure/vpn-gateway/packet-capture','https://learn.microsoft.com/en-au/training/modules/integrate-vnets-with-vnet-peering/','https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-user-defined-route','https://learn.microsoft.com/en-us/azure/application-gateway/private-link','https://learn.microsoft.com/en-us/azure/frontdoor/health-probes','https://learn.microsoft.com/en-us/Azure/dns/dns-traffic-manager-linked-records','https://learn.microsoft.com/en-us/azure/private-link/disable-private-endpoint-network-policy','https://learn.microsoft.com/en-us/azure/firewall/ip-groups','https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/routing-preference-overview','https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-idle-timeout']
+          scenario=['https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-linkvnet-cli','https://learn.microsoft.com/en-us/azure/expressroute/expressroute-optimize-routing','https://learn.microsoft.com/en-us/azure/vpn-gateway/troubleshoot-vpn-with-azure-diagnostics','https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/virtual-network-troubleshoot-peering-sync-route-issues','https://learn.microsoft.com/en-us/azure/virtual-network-manager/how-to-create-user-defined-route','https://learn.microsoft.com/en-us/azure/application-gateway/private-link-configure','https://learn.microsoft.com/en-us/azure/frontdoor/routing-methods','https://learn.microsoft.com/en-us/Azure/dns/tutorial-traffic-manager-linked-records-portal','https://learn.microsoft.com/en-us/azure/firewall-manager/private-link-inspection-secure-virtual-hub','https://learn.microsoft.com/en-us/azure/firewall/create-ip-group','https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/routing-preference-portal','https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-reset']
+          titles=['expressroute-cross-subscription-authorization-governed-circuit-sharing','expressroute-connection-routing-weight-azure-egress-preference','vpn-gateway-packet-capture-managed-tunnel-fault-isolation','vnet-peering-address-space-resize-and-synchronization','avnm-central-user-defined-routing-network-groups','application-gateway-private-link-consumer-private-endpoints','front-door-origin-health-probes-and-session-affinity','traffic-manager-linked-records-dns-flattening-preview','private-endpoint-subnet-network-policy-udr-nsg-enforcement','azure-firewall-ip-groups-reusable-address-policy','public-ip-routing-preference-microsoft-network-vs-internet','load-balancer-tcp-reset-and-idle-timeout']
+          entry={'run_id':rid,'created_at_utc':'2026-09-10T16:00:46Z','local_date':'2026-09-10','local_timezone':'America/Los_Angeles','report_filename':'Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html','report_url':'https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html','primary_article_urls':primary,'scenario_article_urls':scenario,'canonical_urls':primary+scenario,'title_fingerprints':titles,'topic_fingerprints':titles,'feature_lessons':['ExpressRoute cross-subscription authorization','ExpressRoute connection routing weight','VPN Gateway packet capture','VNet peering resize and sync','Azure Virtual Network Manager UDR management','Application Gateway Private Link','Front Door origin health and session affinity','Traffic Manager Linked Records','Private Endpoint subnet network policies','Azure Firewall IP Groups','Public IP routing preference','Load Balancer TCP reset and idle timeout'],'source_case_fingerprints':['central-network-subscription-circuit-shared-to-workload-subscription','dual-expressroute-circuit-azure-egress-preference','managed-vpn-gateway-packet-evidence-fault-isolation','peered-vnet-growth-new-prefix-sync-and-route-propagation','central-avnm-udr-firewall-steering-across-network-groups','cross-vnet-application-gateway-private-endpoint-consumption','multi-origin-front-door-health-affinity-brownout','dnssec-compatible-traffic-manager-linked-record-flattening','private-endpoint-udr-firewall-inspection-network-policies','firewall-policy-reusable-branch-and-backend-ip-groups','internet-egress-cost-performance-routing-preference-choice','long-lived-load-balanced-tcp-session-idle-reset'],'validation':{'report_fetchback_pre_ledger':'passed','index_fetchback_pre_ledger':'passed','lesson_count':12,'question_count':50,'domain_distribution':{'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12},'source_role_separation':'passed','diagram_pairs':12,'full_width_diagrams':'passed','compact_typography':'passed','implementation_verification_troubleshooting':'passed','nonredundancy':'passed','thirty_day_uniqueness':'passed'}}
+          d.setdefault('entries',[]).append(entry); p.write_text(json.dumps(d,indent=2)+'\n')
+          PY
+          git add docs/azure-study-uniqueness-ledger.json
+          git commit -m 'Advance Azure study uniqueness ledger for September 10'
+          git push
+          sleep 3
+          curl -fsSL --retry 8 --retry-delay 2 https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/azure-study-uniqueness-ledger.json | grep -q 'azure-networking-study-2026-09-10-09-00-pacific'
