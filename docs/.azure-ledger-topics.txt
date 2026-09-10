@@ -1,0 +1,294 @@
+## 2026-09-03 azure-networking-study-2026-09-03-18-08-pacific
+LESSON: Virtual WAN as Microsoft-managed global transit
+LESSON: ExpressRoute FastPath: data-path bypass with gateway control
+LESSON: VPN Gateway active-active resiliency
+LESSON: Azure Route Server and managed BGP exchange
+LESSON: VNet address planning and subnet segmentation
+LESSON: Standard and Gateway Load Balancer roles
+LESSON: Application Gateway v2: Layer 7 routing and WAF
+LESSON: System routes, UDRs, BGP propagation, and effective routes
+LESSON: Global web traffic: Front Door versus Traffic Manager
+LESSON: Private Endpoints and private DNS
+LESSON: Azure Firewall, NSGs, and forced-tunnel inspection
+LESSON: Connection Monitor for Azure and hybrid path health
+TOPIC: virtual-wan-microsoft-managed-global-transit
+TOPIC: expressroute-fastpath-supported-data-path-bypass
+TOPIC: vpn-gateway-active-active-dual-instance-resiliency
+TOPIC: azure-route-server-managed-bgp-nva-route-exchange
+TOPIC: vnet-address-planning-nonoverlap-subnet-segmentation
+TOPIC: standard-and-gateway-load-balancer-layer4-nva-chain
+TOPIC: application-gateway-v2-layer7-path-host-waf
+TOPIC: azure-effective-routes-system-udr-bgp-diagnostics
+TOPIC: front-door-edge-routing-and-traffic-manager-dns
+TOPIC: private-endpoint-private-ip-approved-connection-private-dns
+TOPIC: azure-firewall-nsg-forced-tunnel-hybrid-inspection
+TOPIC: connection-monitor-hybrid-rtt-loss-and-path-diagnostics
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/about-fastpath
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/about-active-active-gateways
+PRIMARY: https://learn.microsoft.com/en-us/azure/route-server/overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/application-gateway/overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/frontdoor/front-door-routing-architecture
+PRIMARY: https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/connection-monitor-overview
+SCENARIO: https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke-virtual-wan-architecture
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-linkvnet-arm
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-highlyavailable
+SCENARIO: https://learn.microsoft.com/en-us/azure/route-server/multiregion
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm
+SCENARIO: https://learn.microsoft.com/en-us/azure/load-balancer/gateway-overview
+SCENARIO: https://learn.microsoft.com/en-us/azure/application-gateway/overview-v2
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/diagnose-network-routing-problem
+SCENARIO: https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods
+SCENARIO: https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns-integration
+SCENARIO: https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/dmz/secure-vnet-dmz
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/connection-monitor-create-using-portal
+## 2026-09-03 azure-networking-study-2026-09-03-18-46-pacific
+LESSON: ExpressRoute Global Reach for private site-to-site WAN transit
+LESSON: ExpressRoute BFD for CE-to-MSEE failure detection
+LESSON: VPN Gateway NAT for overlapping address spaces
+LESSON: Virtual WAN routing intent and routing policies
+LESSON: Azure Virtual Network Manager connectivity configurations
+LESSON: StandardV2 NAT Gateway resilient outbound SNAT
+LESSON: Azure DNS Private Resolver hybrid forwarding architecture
+LESSON: Virtual network service endpoint policies for Azure Storage
+LESSON: Azure Firewall DNS proxy for FQDN-based network rules
+LESSON: Azure DDoS IP Protection and Network Protection selection
+LESSON: Network Watcher packet capture and offline analysis
+LESSON: Application Security Groups for scalable NSG rules
+TOPIC: global-reach-circuit-to-circuit-private-wan
+TOPIC: expressroute-bfd-ce-msee-fast-link-detection
+TOPIC: vpn-gateway-ingress-egress-snat-overlap-remediation
+TOPIC: vwan-routing-intent-private-internet-policies-next-hop
+TOPIC: avnm-mesh-hub-spoke-connected-groups-policy-scale
+TOPIC: nat-gateway-standardv2-snat-zone-redundancy-ipv6
+TOPIC: hybrid-dns-private-resolver-endpoints-forwarding-rulesets
+TOPIC: service-endpoint-policy-paas-storage-data-exfiltration-control
+TOPIC: firewall-fqdn-network-rule-dns-proxy-resolution-consistency
+TOPIC: azure-ddos-l3-l4-per-ip-versus-plan-scope
+TOPIC: packet-capture-vm-vmss-filter-storage-analysis
+TOPIC: asg-logical-workload-groups-nsg-rule-scaling
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-global-reach
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-bfd
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/nat-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-wan/about-virtual-hub-routing
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-connectivity-configuration
+PRIMARY: https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-resource
+PRIMARY: https://learn.microsoft.com/en-us/azure/dns/private-resolver-endpoints-rulesets
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoint-policies-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/fqdn-filtering-network-rules
+PRIMARY: https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/packet-capture-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/application-security-groups
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-set-global-reach
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/secure-expressroute
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/nat-howto
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-wan/how-to-routing-policies
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network-manager/how-to-deploy-hub-spoke-topology-with-azure-firewall
+SCENARIO: https://learn.microsoft.com/en-us/azure/nat-gateway/quickstart-create-nat-gateway-v2
+SCENARIO: https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/azure-dns-private-resolver
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoint-policies
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/dns-settings
+SCENARIO: https://learn.microsoft.com/en-us/azure/ddos-protection/manage-ddos-ip-protection-cli
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/packet-capture-inspect
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/tutorial-filter-network-traffic
+## 2026-09-05 azure-networking-study-2026-09-05-08-00-pacific
+LESSON: ExpressRoute Direct MACsec: link encryption, key handling, and operational rollover
+LESSON: VPN Gateway custom IPsec/IKE policy and policy-based traffic selectors
+LESSON: ExpressRoute Metro: site-diverse resiliency inside a metropolitan area
+LESSON: IPsec over ExpressRoute with Virtual WAN: encrypted overlay on private transport
+LESSON: VNet peering gateway transit: shared hybrid gateways and directional controls
+LESSON: Internal Standard Load Balancer HA Ports: NVA scale, flow symmetry, and floating IP
+LESSON: Azure Public DNS DNSSEC: chain of trust, signing, delegation, and validation
+LESSON: Azure Front Door Premium Private Link origins: public edge with private backend
+LESSON: Azure Firewall Premium TLS inspection: certificate trust, split TLS, and IDPS visibility
+LESSON: Virtual Network Flow Logs and Traffic Analytics: platform-wide Layer-4 visibility
+LESSON: Network Watcher IP Flow Verify: proving Azure security-rule decisions
+LESSON: Azure Private Link Service: publishing your own service privately across tenants
+TOPIC: expressroute-direct-macsec-link-encryption-key-rollover
+TOPIC: vpn-gateway-custom-ipsec-ike-policy-traffic-selectors
+TOPIC: expressroute-metro-dual-peering-location-site-diversity
+TOPIC: virtual-wan-ipsec-over-expressroute-private-transport-encryption
+TOPIC: vnet-peering-gateway-transit-remote-gateway-shared-hybrid
+TOPIC: internal-standard-load-balancer-ha-ports-nva-flow-symmetry
+TOPIC: azure-public-dns-dnssec-chain-of-trust-zone-signing
+TOPIC: front-door-premium-private-link-origin-private-backend
+TOPIC: azure-firewall-premium-tls-inspection-certificate-trust
+TOPIC: virtual-network-flow-logs-traffic-analytics-platform-visibility
+TOPIC: network-watcher-ip-flow-verify-security-rule-decision
+TOPIC: private-link-service-provider-standard-load-balancer-private-consumer
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-about-encryption
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/ipsec-ike-policy-howto
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/metro
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-wan/vpn-over-expressroute
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-ha-ports-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/dns/dnssec
+PRIMARY: https://learn.microsoft.com/en-us/azure/frontdoor/private-link
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/premium-features
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/ip-flow-verify-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/private-link/private-link-service-overview
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-macsec
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-3rdparty-device-config-overview
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/design-architecture-for-resiliency
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/site-to-site-high-bandwidth-tunnel
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-peering
+SCENARIO: https://learn.microsoft.com/en-us/azure/load-balancer/components
+SCENARIO: https://learn.microsoft.com/en-us/azure/dns/dnssec-how-to
+SCENARIO: https://learn.microsoft.com/en-us/azure/frontdoor/standard-premium/how-to-enable-private-link-web-app
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/premium-certificates
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-manage
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/diagnose-vm-network-traffic-filtering-problem-cli
+SCENARIO: https://learn.microsoft.com/en-us/azure/private-link/create-private-link-service-portal
+## 2026-09-06 azure-networking-study-2026-09-06-08-01-pacific
+LESSON: ExpressRoute dual-stack private peering
+LESSON: ExpressRoute Microsoft peering route filters
+LESSON: Point-to-Site VPN with Microsoft Entra ID and OpenVPN
+LESSON: Virtual WAN Route Maps
+LESSON: Azure DNS alias records
+LESSON: Application Gateway private-only frontend
+LESSON: Azure Load Balancer Floating IP
+LESSON: Secure Front Door public origins with service tag and X-Azure-FDID
+LESSON: Network Watcher Next Hop
+LESSON: Network Watcher Topology
+LESSON: Application Gateway WAF custom rules
+LESSON: Azure Firewall Policy rule processing
+TOPIC: expressroute-dual-stack-private-peering-ipv4-ipv6
+TOPIC: expressroute-microsoft-peering-route-filters-service-prefix-control
+TOPIC: p2s-vpn-microsoft-entra-id-openvpn-remote-access
+TOPIC: virtual-wan-route-maps-filter-summarize-tag
+TOPIC: azure-dns-alias-resource-lifecycle
+TOPIC: application-gateway-private-only-frontend-internal-l7
+TOPIC: load-balancer-floating-ip-dsr-guest-loopback
+TOPIC: front-door-origin-security-service-tag-fdid
+TOPIC: network-watcher-next-hop-route-decision
+TOPIC: network-watcher-topology-resource-graph-investigation-map
+TOPIC: application-gateway-waf-custom-rule-priority
+TOPIC: azure-firewall-policy-rule-processing-hierarchy
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/howto-routing-cli
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/how-to-routefilter-portal
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-entra-gateway
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-about
+PRIMARY: https://learn.microsoft.com/en-us/azure/dns/dns-alias
+PRIMARY: https://learn.microsoft.com/en-us/azure/application-gateway/configuration-frontend-ip
+PRIMARY: https://learn.microsoft.com/en-us/azure/load-balancer/manage
+PRIMARY: https://learn.microsoft.com/en-us/azure/frontdoor/origin-security
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/next-hop-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/network-insights-topology
+PRIMARY: https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/policy-rule-sets
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-routing-portal-resource-manager
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-circuit-peerings
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-client
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-tag-routes
+SCENARIO: https://learn.microsoft.com/en-us/azure/dns/tutorial-alias-pip
+SCENARIO: https://learn.microsoft.com/en-us/azure/application-gateway/quick-create-cli
+SCENARIO: https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-best-practices
+SCENARIO: https://learn.microsoft.com/en-us/azure/app-service/overview-access-restrictions
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/diagnose-vm-network-routing-problem-cli
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/network-insights-overview
+SCENARIO: https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/configure-waf-custom-rules
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/rule-processing
+## 2026-09-07 azure-networking-study-2026-09-07-08-03-pacific
+LESSON: ExpressRoute Microsoft-peering QoS
+LESSON: Point-to-Site VPN with RADIUS
+LESSON: ExpressRoute with Site-to-Site VPN backup
+LESSON: ExpressRoute Local
+LESSON: Azure Bring Your Own IP
+LESSON: Subnet delegation
+LESSON: Standard Load Balancer outbound rules
+LESSON: Application Gateway v2 rewrite rules
+LESSON: Azure Front Door caching
+LESSON: Azure Bastion native client
+LESSON: Virtual Network Manager security admin rules
+LESSON: Azure Firewall explicit proxy
+TOPIC: expressroute-qos-microsoft-peering-dscp-queueing
+TOPIC: p2s-radius-control-path-client-pool-routing
+TOPIC: expressroute-vpn-backup-route-preference-failover
+TOPIC: expressroute-local-peering-metro-scope
+TOPIC: byoip-custom-prefix-commissioning-public-prefix
+TOPIC: subnet-delegation-resource-provider-contract
+TOPIC: load-balancer-outbound-rule-snat-port-allocation
+TOPIC: application-gateway-rewrite-header-url-reevaluation
+TOPIC: front-door-cache-control-query-cache-key
+TOPIC: bastion-native-client-tunneling-nsg-model
+TOPIC: avnm-security-admin-pre-nsg-rule-precedence
+TOPIC: firewall-explicit-proxy-pac-application-policy
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-qos
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-radius-gateway
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-coexist-resource-manager
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-faqs
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/custom-ip-address-prefix
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/manage-subnet-delegation
+PRIMARY: https://learn.microsoft.com/en-us/azure/load-balancer/outbound-rules
+PRIMARY: https://learn.microsoft.com/en-us/azure/application-gateway/rewrite-http-headers-url
+PRIMARY: https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching
+PRIMARY: https://learn.microsoft.com/en-us/azure/bastion/native-client
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-security-admins
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/explicit-proxy
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/expressroute-nat
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-how-to-radius-ps
+SCENARIO: https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/expressroute
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/howto-circuit-cli
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/manage-custom-ip-address-prefix
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-subnet
+SCENARIO: https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-outbound-connections
+SCENARIO: https://learn.microsoft.com/en-us/azure/application-gateway/add-http-header-rewrite-rule-powershell
+SCENARIO: https://learn.microsoft.com/en-us/azure/frontdoor/how-to-configure-caching
+SCENARIO: https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-enforcement
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/firewall-azure-policy
+## 2026-09-08 azure-networking-study-2026-09-08-08-00-pacific
+LESSON: ExpressRoute Traffic Collector: sampled flow visibility for private and Microsoft peering
+LESSON: VPN Gateway BGP and APIPA peering: dynamic routes without static prefix maintenance
+LESSON: Point-to-Site custom routes and forced tunneling: controlling what remote clients send into Azure
+LESSON: Azure Private DNS virtual network links and autoregistration
+LESSON: Azure Virtual Network encryption: host-to-host encryption inside a VNet
+LESSON: Application Gateway end-to-end TLS: frontend termination plus encrypted backend hops
+LESSON: Azure Load Balancer distribution modes: five-tuple hashing versus session persistence
+LESSON: Traffic Manager nested profiles and endpoint monitoring
+LESSON: Network Watcher NSG diagnostics: simulate policy across NIC, subnet, and admin rules
+LESSON: Azure Firewall with multiple public IPs: DNAT scale and outbound SNAT capacity
+LESSON: Azure Firewall Premium IDPS: signatures, modes, private ranges, and tuning
+LESSON: Azure Network Security Perimeter: PaaS public-access boundaries and transition to enforcement
+TOPIC: expressroute-traffic-collector-sampled-flow-visibility-for-private-and-microsoft-peering
+TOPIC: vpn-gateway-bgp-and-apipa-peering-dynamic-routes-without-static-prefix-maintenance
+TOPIC: point-to-site-custom-routes-and-forced-tunneling-controlling-what-remote-clients-send-into-azure
+TOPIC: azure-private-dns-virtual-network-links-and-autoregistration
+TOPIC: azure-virtual-network-encryption-host-to-host-encryption-inside-a-vnet
+TOPIC: application-gateway-end-to-end-tls-frontend-termination-plus-encrypted-backend-hops
+TOPIC: azure-load-balancer-distribution-modes-five-tuple-hashing-versus-session-persistence
+TOPIC: traffic-manager-nested-profiles-and-endpoint-monitoring
+TOPIC: network-watcher-nsg-diagnostics-simulate-policy-across-nic-subnet-and-admin-rules
+TOPIC: azure-firewall-with-multiple-public-ips-dnat-scale-and-outbound-snat-capacity
+TOPIC: azure-firewall-premium-idps-signatures-modes-private-ranges-and-tuning
+TOPIC: azure-network-security-perimeter-paas-public-access-boundaries-and-transition-to-enforcement
+PRIMARY: https://learn.microsoft.com/en-us/azure/expressroute/traffic-collector
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-bgp-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-p2s-advertise-custom-routes
+PRIMARY: https://learn.microsoft.com/en-us/azure/dns/private-dns-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-encryption-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/application-gateway/ssl-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/load-balancer/distribution-mode-concepts
+PRIMARY: https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-monitoring
+PRIMARY: https://learn.microsoft.com/en-us/azure/network-watcher/nsg-diagnostics-overview
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/deploy-multi-public-ip-powershell
+PRIMARY: https://learn.microsoft.com/en-us/azure/firewall/features-by-sku
+PRIMARY: https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-concepts
+SCENARIO: https://learn.microsoft.com/en-us/azure/expressroute/how-to-configure-traffic-collector
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/bgp-howto
+SCENARIO: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-point-to-site-routing
+SCENARIO: https://learn.microsoft.com/en-us/azure/dns/private-dns-autoregistration
+SCENARIO: https://learn.microsoft.com/en-us/azure/virtual-network/how-to-create-encryption
+SCENARIO: https://learn.microsoft.com/en-us/azure/application-gateway/certificates-for-backend-authentication
+SCENARIO: https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-distribution-mode
+SCENARIO: https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-nested-profiles
+SCENARIO: https://learn.microsoft.com/en-us/azure/network-watcher/diagnose-network-security-rules
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-dnat
+SCENARIO: https://learn.microsoft.com/en-us/azure/firewall/premium-deploy
+SCENARIO: https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-transition
