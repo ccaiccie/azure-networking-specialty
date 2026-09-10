@@ -1,0 +1,35 @@
+name: Export Azure ledger topics
+on:
+  push:
+    paths:
+      - '.github/workflows/export-ledger-topics.yml'
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export active topic manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          p='docs/azure-study-uniqueness-ledger.json'
+          d=json.load(open(p))
+          out=[]
+          for e in d.get('entries',[]):
+              out.append(f"## {e.get('local_date')} {e.get('run_id')}")
+              for x in e.get('feature_lessons',[]): out.append('LESSON: '+x)
+              for x in e.get('topic_fingerprints',[]): out.append('TOPIC: '+x)
+              for x in e.get('primary_article_urls',[]): out.append('PRIMARY: '+x)
+              for x in e.get('scenario_article_urls',[]): out.append('SCENARIO: '+x)
+          open('docs/.azure-ledger-topics.txt','w').write('\n'.join(out)+'\n')
+          PY
+      - name: Commit manifest
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/.azure-ledger-topics.txt
+          git commit -m 'Export Azure study ledger topic manifest' || exit 0
+          git push
