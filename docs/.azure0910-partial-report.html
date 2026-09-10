@@ -1,0 +1,326 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Azure Networking Specialty Daily Study Quiz — 2026-09-10 08:03 PT</title><style>
+:root{--bg:#eef3f8;--paper:#fff;--ink:#172b3d;--muted:#586b7c;--line:#cbd7e1;--az:#0078d4;--navy:#0a3558;--green:#107c41;--red:#a4262c;--code:#071d2e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.56 "Segoe UI",Arial,sans-serif}
+main{width:1280px;margin:26px auto 70px}
+header,.toc,.lesson,.quiz-shell,.validation{background:var(--paper);border:1px solid var(--line);padding:23px 30px;margin:0 0 22px}
+header{border-top:6px solid var(--az)}
+h1{color:var(--navy);font-size:30px;line-height:1.2;margin:.1em 0 .35em}
+h2{color:var(--navy);font-size:23px;line-height:1.25;margin:.2em 0 .75em}
+h3{font-size:18px;line-height:1.3;color:#075a9c;margin:1.35em 0 .4em;border-bottom:1px solid #dce6ed;padding-bottom:.22em}
+p,li{max-width:118ch}
+p{margin:.48em 0 .8em}
+.eyebrow{text-transform:uppercase;letter-spacing:.055em;font-weight:700;font-size:12.5px;color:var(--az)}
+.wc{font-size:12px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+.note{background:#eef7fd;border-left:4px solid var(--az);padding:11px 14px;margin:12px 0}
+.diagram{display:block;width:100%;margin:13px 0 18px;background:#f8fbfd;border:1px solid #b7d4e8;padding:10px}
+.diagram img{display:block;width:100%;height:auto}
+.diagram figcaption,.diagram-links,.small{font-size:12.5px;color:var(--muted);margin-top:6px}
+.lab{background:#f3f9fd;border:1px solid #96c9e7;padding:13px 16px;margin:10px 0 15px}
+.code-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#075a9c;margin-bottom:5px}
+pre{background:var(--code);color:#ebf7ff;padding:13px 15px;overflow:auto;line-height:1.45;font-size:13px;margin:8px 0 11px}
+pre.output{background:#f7f9fb;color:#163047;border:1px solid #cbd8e2}
+code{font:13px Consolas,"Courier New",monospace}
+.expected{background:#f1f8f3;border-left:4px solid var(--green);padding:10px 13px;margin:9px 0 13px}
+.failure{background:#fff1f1;border-left:4px solid var(--red);padding:10px 13px;margin:9px 0 13px}
+.sources{margin-top:18px;background:#f5f7f9;border-top:1px solid var(--line);padding:10px 12px;font-size:12.5px;overflow-wrap:anywhere}
+a{color:#005ea8}
+.toc ol{columns:2;column-gap:44px}.toc li{margin:.32em 0;break-inside:avoid}
+.question{border:1px solid var(--line);padding:13px 16px;margin:12px 0}
+.choice{display:block;background:#f7fafc;border:1px solid #d9e3ea;padding:6px 9px;margin:5px 0}
+button{background:var(--az);color:#fff;border:0;padding:8px 13px;font-weight:600;cursor:pointer}
+button.secondary{background:#596875}
+.feedback{min-height:1.25em;margin-top:7px;font-weight:600}
+.result{white-space:pre-wrap;background:#eef7f1;border:1px solid #bddac7;padding:13px;margin-top:12px}
+.validation table{border-collapse:collapse;width:100%;font-size:12.5px}.validation th,.validation td{border:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}
+</style></head><body><main>
+<header><div class="eyebrow">Azure networking professional development · implementation-first edition</div><h1>Azure Networking Specialty Daily Interactive Study Report</h1>
+<p><strong>Report date:</strong> September 10, 2026. <strong>Current Microsoft alignment:</strong> Microsoft Certified: Azure Network Engineer Associate / AZ-700; the current AZ-700 skills outline is measured as of July 27, 2026.</p>
+<div class="note">Twelve new lessons were selected against the active 30-day uniqueness set and recent daily reports. Each architecture explanation is followed by a full-width Azure draw.io/SVG diagram, implementation code, representative successful state, and command-driven troubleshooting. Sample command output is representative rather than byte-for-byte guaranteed.</div></header>
+<section class="toc"><h2>Today’s 12 lessons</h2><ol><li><a href="#l1">ExpressRoute IPv6 private peering: dual-stack BGP without treating IPv6 as an afterthought</a> <span class="wc">849 words</span></li><li><a href="#l2">Point-to-Site VPN with Microsoft Entra ID and OpenVPN: identity-aware remote access</a> <span class="wc">778 words</span></li><li><a href="#l3">Virtual WAN Route Maps: filter, summarize, and modify BGP attributes at connection boundaries</a> <span class="wc">803 words</span></li><li><a href="#l4">VNet-to-VNet VPN Gateway: encrypted inter-VNet connectivity across regions and subscriptions</a> <span class="wc">761 words</span></li><li><a href="#l5">Azure DNS alias records: resource-aware apex and public-IP mappings without stale addresses</a> <span class="wc">708 words</span></li><li><a href="#l6">Standard Load Balancer Floating IP: direct server return semantics for NVAs and multi-VIP services</a> <span class="wc">802 words</span></li><li><a href="#l7">Application Gateway v2 autoscaling: capacity ranges, subnet sizing, and scale-event behavior</a> <span class="wc">770 words</span></li><li><a href="#l8">Traffic Manager Subnet routing: DNS steering by resolver-source network</a> <span class="wc">795 words</span></li><li><a href="#l9">Azure Firewall Policy inheritance: central guardrails with child-policy autonomy</a> <span class="wc">783 words</span></li><li><a href="#l10">Azure Firewall SNAT private ranges: preserving source identity for internal destinations</a> <span class="wc">769 words</span></li><li><a href="#l11">Azure DDoS Rapid Response: preparing telemetry and escalation before a critical attack</a> <span class="wc">769 words</span></li><li><a href="#l12">Network Watcher Next Hop: prove Azure’s route decision for one destination</a> <span class="wc">777 words</span></li></ol></section>
+<section class="lesson" id="l1" data-domain="Hybrid connectivity and architecture">
+<div class="eyebrow">Lesson 1 · Hybrid connectivity and architecture · <span class="wc">849 substantive words</span></div>
+<h2>ExpressRoute IPv6 private peering: dual-stack BGP without treating IPv6 as an afterthought</h2>
+<h3>Why it matters</h3>
+<p>IPv6 on ExpressRoute private peering is not a separate transport service; it is an additional address family carried across the same private peering relationship. That distinction matters because teams often design an IPv4 ExpressRoute circuit correctly and then bolt IPv6 on later without planning peer subnets, gateway support, VNet IPv6 prefixes, route advertisement, or monitoring. The result is a circuit that looks healthy in the portal while IPv6 traffic has no usable end-to-end route. A dual-stack design should therefore treat IPv4 and IPv6 as parallel forwarding planes with shared physical redundancy but separate BGP prefixes, next hops, and failure evidence.</p>
+<h3>Architecture</h3>
+<p>Azure private peering uses two redundant BGP sessions, one on each ExpressRoute link. Microsoft documents /30 peer subnets for IPv4 and /126 peer subnets for IPv6. On each subnet, the customer router uses the first usable address and Microsoft uses the second usable address. The same VLAN ID and customer ASN identify the peering, but the address-family state is independent enough that IPv4 can be established while IPv6 is misconfigured. The VNet side also needs IPv6-capable addressing and an ExpressRoute virtual network gateway configuration that supports the intended IPv6 path. Route learning should be inspected per address family rather than inferred from the green state of the circuit resource.</p><p>A useful mental model is physical link → private-peering VLAN → IPv4 and IPv6 BGP address families → ExpressRoute gateway/FastPath where applicable → dual-stack VNet subnets and NICs. The control plane exchanges prefixes; the data plane forwards packets based on the installed route for each family. If an IPv6 application fails while IPv4 works, focus on the IPv6 peer subnet, BGP advertisements, VNet IPv6 prefix, guest operating-system route, and security policy before touching the working IPv4 configuration.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L01-expressroute-ipv6-private-peering.svg" alt="ExpressRoute IPv6 private peering: dual-stack BGP without treating IPv6 as an afterthought architecture"><figcaption>ExpressRoute IPv6 private peering: dual-stack BGP without treating IPv6 as an afterthought — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L01-expressroute-ipv6-private-peering.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L01-expressroute-ipv6-private-peering.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Start with a provisioned ExpressRoute circuit and confirm both physical links and existing private peering are healthy. Reserve two non-overlapping /126 networks for the IPv6 peer links; these are infrastructure addresses and must not be carved from the workload VNet prefixes. Confirm the customer ASN is not Azure-reserved and that the router supports MP-BGP for IPv6. On the Azure side, add IPv6 prefixes to the VNet/subnets that need dual-stack connectivity and verify the gateway and target services support IPv6. Document which on-premises IPv6 aggregates will be advertised and which Azure prefixes are expected back so verification has a concrete route list rather than a vague “IPv6 enabled” target.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code># Inspect the existing private peering before adding IPv6.
+az network express-route peering show \
+  -g &lt;resource-group&gt; \
+  --circuit-name &lt;circuit-name&gt; \
+  --name AzurePrivatePeering -o jsonc
+
+# Microsoft requires two /126 IPv6 peer subnets for IPv6 private peering.
+# The exact update surface can vary with Azure CLI/API version, so inspect it
+# rather than copying an obsolete switch from an older article.
+az network express-route peering update --help
+
+# After the IPv6 family is configured, verify both IPv4 and IPv6 peering state.
+az network express-route peering show \
+  -g &lt;resource-group&gt; --circuit-name &lt;circuit-name&gt; \
+  --name AzurePrivatePeering -o jsonc</code></pre><p>The peering update is deliberately scoped to the IPv6 address family so the working IPv4 peer is not replaced. Before applying it, verify the two /126 blocks are dedicated to ExpressRoute and configure matching IPv6 addresses on the customer routers. After Azure accepts the change, enable the IPv6 address family on both CE BGP neighbors and advertise only the planned aggregates. The VNet commands are separate because ExpressRoute peering and workload addressing are independent resources; enabling one does not automatically create the other. In production, stage this with one test subnet and one test VM before publishing AAAA records broadly.</p></div>
+<h3>IPv6-specific routing and rollout details</h3>
+<p>Dual-stack migrations are safer when routing is enabled before application DNS changes. Bring up IPv6 peering, validate routes and direct IPv6 reachability, then publish AAAA records only for services that have proven listeners and security policy. This avoids a subtle failure mode where clients prefer IPv6 after a DNS change and expose a partially built path. Also verify return-path policy on stateful firewalls: an IPv6 flow entering through ExpressRoute must return through a route that preserves the expected session path, just as with IPv4.</p>
+<h3>Verification</h3>
+<p>Successful output should show both Azure provisioning state and usable IPv6 routes. A green peering object without any IPv6 route entries proves only that Resource Manager accepted configuration. The route table should contain the on-premises IPv6 aggregate on both redundant paths, and the VM NIC should select VirtualNetworkGateway for that prefix. From the CE side, verify Azure VNet IPv6 routes are learned over both sessions. Then run an application-level IPv6 test, such as `curl -6` or a TCP probe, so you know the route is not merely present but usable.</p>
+<pre><code>az network express-route peering show   -g &lt;resource-group&gt; --circuit-name &lt;circuit-name&gt;   --name AzurePrivatePeering -o jsonc
+
+az network express-route peering route-table show   -g &lt;resource-group&gt; --circuit-name &lt;circuit-name&gt;   --path primary --peering-name AzurePrivatePeering
+
+az network nic show-effective-route-table   -g &lt;resource-group&gt; -n &lt;dual-stack-nic&gt; -o table</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>Peering provisioningState: Succeeded
+Peering state: Enabled
+Primary IPv6 peer prefix: 2001:db8:100::/126
+Secondary IPv6 peer prefix: 2001:db8:100::4/126
+
+BGP route table:
+2001:db8:300::/48   learned from customer ASN 65020
+2001:db8:200::/56   advertised toward on-premises
+
+NIC effective routes:
+2001:db8:300::/48   VirtualNetworkGateway   Active</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>When IPv4 succeeds and IPv6 fails, compare the two address families instead of restarting the whole circuit. First confirm the /126s are correctly assigned on both customer routers and that MP-BGP has an IPv6 address-family session. Then inspect the ExpressRoute route table and the workload NIC’s effective routes. A route absent from the ExpressRoute peer table means the problem is at BGP advertisement or filtering; a route present there but absent on the NIC moves the investigation toward the gateway/VNet side. If the route is installed but packets still fail, inspect NSGs, NVA policy, and the guest OS IPv6 address/default route.</p><p>A representative failure is: IPv4 BGP Established; IPv6 peer state idle; no IPv6 prefixes in the ExpressRoute route table. That points to peering-address or address-family configuration, not DNS. Another failure is: IPv6 BGP established and routes present, but the VM has no IPv6 address on the NIC/subnet. In that case the network underlay is ready but the workload is not dual stack. Correct the missing layer and retest with a literal IPv6 destination before adding DNS into the path.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/howto-routing-cli">https://learn.microsoft.com/en-us/azure/expressroute/howto-routing-cli</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/expressroute/configure-expressroute-private-peering">https://learn.microsoft.com/en-us/azure/expressroute/configure-expressroute-private-peering</a></div>
+</section><section class="lesson" id="l2" data-domain="Hybrid connectivity and architecture">
+<div class="eyebrow">Lesson 2 · Hybrid connectivity and architecture · <span class="wc">778 substantive words</span></div>
+<h2>Point-to-Site VPN with Microsoft Entra ID and OpenVPN: identity-aware remote access</h2>
+<h3>Why it matters</h3>
+<p>Certificate and RADIUS authentication remain useful, but Microsoft Entra ID changes the P2S trust model by making user identity, Conditional Access, and MFA part of VPN admission. The feature is specifically tied to OpenVPN and the Azure VPN Client, so it is not a generic authentication option that can be mixed with any P2S tunnel type. That matters operationally: an administrator can have a perfectly healthy VPN gateway and correct routes yet users still fail because the tenant, audience, issuer, client application, or Conditional Access decision is wrong. Troubleshooting therefore has to separate tunnel transport from identity authorization.</p>
+<h3>Architecture</h3>
+<p>The client first reaches the public IP of the Azure VPN Gateway and establishes the OpenVPN transport. Authentication is delegated to Microsoft Entra ID using the configured tenant, issuer, and audience values. After successful identity evaluation, the Azure VPN Client receives/uses the P2S configuration and the gateway assigns an address from the client pool. The resulting route set determines which Azure or hybrid prefixes the client sends into the tunnel. Entra authentication governs who may enter; it does not automatically create application authorization inside the VNet.</p><p>Microsoft now supports a Microsoft-registered Azure VPN Client application/audience, reducing the need for manual app registration. Microsoft also publishes retirement dates for manually registered clients, so new deployments should follow the current Microsoft-registered client values rather than copying older tenant-specific app-registration instructions. Conditional Access can add MFA or device/user conditions, but policies should be tested carefully because a mis-scoped policy can deny every VPN sign-in even while the gateway health remains normal.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L02-p2s-entra-openvpn.svg" alt="Point-to-Site VPN with Microsoft Entra ID and OpenVPN: identity-aware remote access architecture"><figcaption>Point-to-Site VPN with Microsoft Entra ID and OpenVPN: identity-aware remote access — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L02-p2s-entra-openvpn.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L02-p2s-entra-openvpn.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Use a route-based VPN Gateway SKU that supports P2S OpenVPN; Basic SKU does not provide the required combination. Choose a client address pool that does not overlap the VNet, connected VNets, or on-premises networks. Obtain the Entra tenant ID and use the currently documented Tenant, Audience, and Issuer values for the Microsoft-registered client. Confirm DNS behavior for remote users as a separate design item: connecting a user to the VNet does not by itself guarantee that private DNS zones or on-premises DNS names resolve correctly. Plan route distribution and name resolution before client rollout.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code>TENANT_ID=&lt;entra-tenant-guid&gt;
+AUDIENCE=c632b3df-fb67-4d84-bdcf-b95ad541b5c8
+
+az network vnet-gateway create \
+  --name &lt;vpn-gateway&gt; \
+  --resource-group &lt;resource-group&gt; \
+  --location &lt;region&gt; \
+  --vnet &lt;vnet-name&gt; \
+  --gateway-type Vpn \
+  --vpn-type RouteBased \
+  --sku VpnGw2AZ \
+  --public-ip-addresses &lt;gateway-public-ip&gt; \
+  --address-prefixes &lt;172.20.100.0/24&gt; \
+  --client-protocol OpenVPN \
+  --vpn-auth-type AAD \
+  --aad-tenant &quot;https://login.microsoftonline.com/$TENANT_ID&quot; \
+  --aad-issuer &quot;https://sts.windows.net/$TENANT_ID/&quot; \
+  --aad-audience &quot;$AUDIENCE&quot;
+
+az network vnet-gateway vpn-client generate \
+  -g &lt;resource-group&gt; -n &lt;vpn-gateway&gt; \
+  --processor-architecture Amd64</code></pre><p>The gateway update changes the P2S authentication boundary, so replace the placeholder tenant, audience, and issuer with the exact values Microsoft documents for the cloud in which the gateway runs. The address pool is leased to VPN clients and must remain unique across every network they may reach. After configuration, distribute the generated Azure VPN Client profile rather than asking users to hand-build OpenVPN settings. If Conditional Access is part of the design, introduce it after a baseline Entra-authenticated connection works; this keeps authentication-policy troubleshooting separate from tunnel configuration.</p></div>
+<h3>Identity, client lifecycle, and access boundaries</h3>
+<p>Conditional Access should be introduced with a pilot group and an emergency access path. The strongest design is not simply “MFA enabled”; it is a documented identity flow with a supported Azure VPN Client, known tenant/audience values, tested device/user conditions, predictable client routes, and private DNS behavior. Remote access also needs logging: Entra sign-in logs explain the identity decision while VPN Gateway connection data explains the tunnel. Correlating timestamps between those sources quickly distinguishes denied identity from broken network forwarding.</p>
+<h3>Verification</h3>
+<p>Validation should include three independent proofs: the gateway advertises OpenVPN and the intended client pool, Entra sign-in logs show a successful authentication for the Azure VPN Client, and the connected endpoint receives a lease and routes. Increasing ingress/egress counters confirm data movement but do not identify which application works. Test one Azure private IP and one private FQDN. If IP works and the name fails, preserve the tunnel and fix DNS. If sign-in fails before a client address is assigned, preserve the network configuration and investigate identity.</p>
+<pre><code>az network vnet-gateway show   -g &lt;resource-group&gt; -n &lt;vpn-gateway&gt;   --query &quot;{pool:vpnClientConfiguration.vpnClientAddressPool.addressPrefixes,protocols:vpnClientConfiguration.vpnClientProtocols,audience:vpnClientConfiguration.aadAudience}&quot; -o json
+
+az network vnet-gateway list-vpn-connections   -g &lt;resource-group&gt; -n &lt;vpn-gateway&gt; -o table</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>{
+  &quot;pool&quot;: [&quot;172.20.100.0/24&quot;],
+  &quot;protocols&quot;: [&quot;OpenVPN&quot;],
+  &quot;audience&quot;: &quot;&lt;Microsoft-registered Azure VPN Client audience&gt;&quot;
+}
+
+Connected client:
+Assigned IP: 172.20.100.12
+Connection status: Connected
+Ingress/Egress bytes: increasing</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>If users receive an Entra sign-in error before a tunnel is established, inspect identity first: tenant URL, issuer, audience, account tenant, Azure VPN Client version, and Conditional Access logs. Do not modify NSGs or VNet routes for an authentication failure that occurs before the client receives a VPN address. If authentication succeeds and the client shows Connected but Azure prefixes are unreachable, inspect the downloaded profile routes, gateway learned routes, VNet peering/gateway transit, and the client’s local route table.</p><p>A useful failure split is: sign-in succeeds, assigned VPN address exists, but `route print` or `netstat -rn` lacks the target Azure prefix. That is a route-distribution issue. If the route exists and TCP still fails, use Network Watcher from the Azure workload side and verify return reachability to the P2S pool. If private FQDNs fail while IP connectivity works, inspect DNS servers and suffixes in the VPN profile. Each symptom belongs to a different layer, and mixing those layers is what makes P2S incidents unnecessarily long.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-entra-gateway">https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-entra-gateway</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-about">https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-about</a></div>
+</section><section class="lesson" id="l3" data-domain="Hybrid connectivity and architecture">
+<div class="eyebrow">Lesson 3 · Hybrid connectivity and architecture · <span class="wc">803 substantive words</span></div>
+<h2>Virtual WAN Route Maps: filter, summarize, and modify BGP attributes at connection boundaries</h2>
+<h3>Why it matters</h3>
+<p>Virtual WAN normally provides managed route exchange, but large enterprises still need policy: suppress a branch prefix, summarize many routes, tag a route with a community, or prepend an AS path before advertising toward another connection. Route Maps bring that policy to the virtual hub connection boundary. They are not equivalent to a traditional router route-map in every detail, and assuming that they can influence Azure best-path selection in every direction leads to bad designs. The key is to understand where inbound and outbound processing occurs relative to the hub router.</p>
+<h3>Architecture</h3>
+<p>An inbound Route Map processes routes as they enter the virtual hub from a supported connection before those routes are installed in the hub routing table. An outbound Route Map processes routes after the hub has selected its path and before those routes are advertised to the target connection. Because best-path selection occurs before outbound processing, an outbound AS-path change cannot be used to make the Azure hub itself prefer a different path; it only changes what the receiving neighbor sees. Supported connection types include ExpressRoute, S2S VPN, VNet, and P2S/user connections, with documented limitations around NVA connections.</p><p>Rules can match route prefixes, BGP communities, and AS paths. Multiple match conditions in one rule are ANDed. Actions can drop routes or modify them, including aggregation and BGP attribute changes. Unmatched routes are allowed by default, so a Route Map is not an implicit-deny policy. Summarization has an important side effect: Microsoft documents that summarized routes lose existing AS-path and community attributes. That makes aggregation a topology decision, not merely a cosmetic route-count reduction.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L03-vwan-route-maps.svg" alt="Virtual WAN Route Maps: filter, summarize, and modify BGP attributes at connection boundaries architecture"><figcaption>Virtual WAN Route Maps: filter, summarize, and modify BGP attributes at connection boundaries — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L03-vwan-route-maps.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L03-vwan-route-maps.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Inventory the current hub route table and connection advertisements before creating policy. Decide whether the desired behavior is inbound or outbound and write the expected before/after route set. Avoid Azure-reserved ASNs and remember Route Maps support 2-byte ASNs for the documented prepend function. Do not combine NAT and Route Map modification on the same prefix. Build narrow match conditions; a rule with no match conditions matches every route presented to it. Because unmatched routes default to allow, explicitly test both the prefixes intended to change and at least one prefix that should remain untouched.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code># Route Maps are configured through the current Virtual WAN management
+# surface. Inspect the installed CLI extension/API first.
+az extension add --name virtual-wan --upgrade
+az network vhub show -g &lt;resource-group&gt; -n &lt;virtual-hub&gt; -o jsonc
+
+# If the CLI version exposes route-map subcommands, create the route map
+# and rule using those documented parameters. Otherwise use the portal or
+# ARM/Bicep resource schema documented by Microsoft.
+az network vhub route-map --help
+
+# After creation, inspect the connection on which the Route Map is applied.
+az network vhub connection show   -g &lt;resource-group&gt; --vhub-name &lt;virtual-hub&gt;   -n &lt;connection-name&gt; -o jsonc</code></pre><p>Route Maps deserve change-control discipline because the policy can affect every prefix on a connection. Build the map with a deliberately narrow prefix or community match, attach it in one direction, and verify a control route that should remain unchanged. If the desired function is summarization, document the loss of original AS-path/community attributes as part of the design. If the desired function is prepend, choose a permitted 2-byte ASN that is not Azure-reserved. The current management surface evolves, so the lab explicitly asks the installed CLI for route-map support rather than inventing a command path that may not exist.</p></div>
+<h3>Route-map ordering, aggregation, and policy effects</h3>
+<p>Route Maps are especially useful during WAN migrations because they let Azure act as a controlled policy boundary between old and new routing domains. For example, a branch aggregate can be summarized before advertisement to another hub while a specific migration prefix remains unsummarized for steering. Treat every change as a routing-policy rollout: capture a route baseline, apply to one direction on one connection, validate expected and control prefixes, then expand. This is more reliable than using application symptoms as the first indication that a BGP policy changed too much.</p>
+<h3>Verification</h3>
+<p>The strongest verification is a before/after route view from the Route Map dashboard and the receiving BGP neighbor. A successful Azure resource state is secondary to the actual Prefix, AS Path, and Community values. For outbound policy, verify the remote branch sees the modification while remembering Azure selected its own best path earlier. For inbound policy, verify the modified route enters the hub table as intended. Always test a nonmatching route too, because the default behavior is allow and an accidental broad match is easier to detect with a control prefix.</p>
+<pre><code>az network vhub connection show   -g &lt;resource-group&gt; --vhub-name &lt;virtual-hub&gt;   -n &lt;connection-name&gt; -o jsonc
+
+# Use the Route Map dashboard to inspect Prefix, AS Path, and Community
+# in the applied direction; capture before/after values for the target prefix.</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>Before inbound policy:
+10.50.1.0/24   AS_PATH 65010   Community 65010:100
+
+After inbound prepend policy:
+10.50.1.0/24   AS_PATH 65033 65010   Community 65010:100
+
+Unmatched route:
+10.60.0.0/16   unchanged and still advertised</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>If a policy appears to have no effect, first confirm it is attached to the correct connection and direction. A common mistake is applying an outbound map while expecting Azure’s own best-path decision to change. Since the hub selects a path before outbound processing, the route may be modified for the neighbor but not for the hub’s choice. Another common mistake is a match that is too broad; a rule with no condition matches every route and can unexpectedly drop or modify the full advertisement set.</p><p>Use the Route Map dashboard to compare Prefix, AS Path, and Community before and after policy. If a summarized route appears but communities vanished, that is expected documented behavior rather than a dashboard defect. If a prefix is absent entirely, inspect whether a Drop action matched it and whether a prior terminating rule prevented later processing. The safest correction is to narrow conditions and retest on one connection before expanding the policy across the WAN.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-about">https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-about</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-prepend-routes">https://learn.microsoft.com/en-us/azure/virtual-wan/route-maps-prepend-routes</a></div>
+</section><section class="lesson" id="l4" data-domain="Hybrid connectivity and architecture">
+<div class="eyebrow">Lesson 4 · Hybrid connectivity and architecture · <span class="wc">761 substantive words</span></div>
+<h2>VNet-to-VNet VPN Gateway: encrypted inter-VNet connectivity across regions and subscriptions</h2>
+<h3>Why it matters</h3>
+<p>VNet peering is usually the simplest way to connect Azure VNets, but there are designs that deliberately require IPsec between VNets: administrative separation, cross-subscription boundaries, legacy topology consistency, or a need to combine inter-VNet tunnels with a broader VPN Gateway design. VNet-to-VNet connections use Azure VPN Gateways on both sides and create IPsec/IKE tunnels similar to S2S VPN. The important architectural consequence is that you are choosing gateway-mediated encrypted connectivity rather than the lower-latency direct backbone semantics of VNet peering.</p>
+<h3>Architecture</h3>
+<p>Each VNet has its own `GatewaySubnet`, public IP, and route-based VPN Gateway. Azure then creates a VNet-to-VNet connection object referencing both virtual network gateways. For VNets in different subscriptions, resource IDs and permissions matter because each side may be managed independently. Azure automatically understands the other VNet’s address spaces for the VNet-to-VNet connection type, whereas a design built with S2S/local network gateway objects requires manual maintenance of the remote address prefixes.</p><p>The data path is workload → VNet routing → local VPN Gateway → IPsec tunnel → remote VPN Gateway → remote VNet. That means gateway throughput, SKU, zone design, and tunnel state can limit traffic even when both VNets themselves are healthy. Non-overlapping address space remains mandatory. DNS is independent: an encrypted IP route between VNets does not automatically make private DNS names resolvable across both networks.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L04-vnet-to-vnet-vpn.svg" alt="VNet-to-VNet VPN Gateway: encrypted inter-VNet connectivity across regions and subscriptions architecture"><figcaption>VNet-to-VNet VPN Gateway: encrypted inter-VNet connectivity across regions and subscriptions — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L04-vnet-to-vnet-vpn.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L04-vnet-to-vnet-vpn.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Plan non-overlapping CIDRs and create a `GatewaySubnet` in each VNet; Microsoft recommends leaving enough space for gateway scale and future features. Use Standard static public IPs and supported route-based gateway SKUs. When the VNets are in different subscriptions, ensure the operator can read/reference both gateways and switch subscriptions carefully during creation. Decide whether BGP is needed; simple VNet-to-VNet connectivity can use the automatically understood VNet address spaces, while more complex routing requirements may justify S2S-style local network gateway objects instead.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code># Create a Standard static public IP and route-based VPN gateway for VNet A.
+az network public-ip create \
+  -g &lt;rg-a&gt; -n &lt;gw-a-pip&gt; --sku Standard \
+  --allocation-method Static -l &lt;region-a&gt;
+
+az network vnet-gateway create \
+  -g &lt;rg-a&gt; -n &lt;gw-a&gt; -l &lt;region-a&gt; \
+  --public-ip-addresses &lt;gw-a-pip&gt; \
+  --vnet &lt;vnet-a&gt; --gateway-type Vpn \
+  --vpn-type RouteBased --sku VpnGw2AZ \
+  --vpn-gateway-generation Generation2
+
+# Repeat the gateway build for VNet B, then create the VNet-to-VNet connection.
+az network vpn-connection create \
+  -n &lt;a-to-b&gt; -g &lt;connection-rg&gt; -l &lt;region-a&gt; \
+  --vnet-gateway 1 &lt;gw-a-name-or-resource-id&gt; \
+  --shared-key &quot;&lt;strong-shared-key&gt;&quot; \
+  --vnet-gateway 2 &lt;gw-b-name-or-resource-id&gt;
+
+az network vpn-connection show \
+  -g &lt;connection-rg&gt; -n &lt;a-to-b&gt; -o jsonc</code></pre><p>The connection command references both virtual network gateways, which is what distinguishes VNet-to-VNet from a conventional S2S connection built around local network gateway objects. Use resource IDs when gateways live in different resource groups or subscriptions to avoid ambiguity. Keep the shared key in a secure deployment mechanism rather than shell history for production. Gateway creation is long-running; do not treat `--no-wait` as completion. Poll the gateway provisioning state before creating the tunnel so a connection error is not merely a race against unfinished infrastructure.</p></div>
+<h3>Encryption, ownership, and route behavior</h3>
+<p>Choose VNet-to-VNet VPN intentionally. Peering generally gives simpler direct VNet connectivity with fewer gateway bottlenecks. VPN Gateway becomes attractive when encryption semantics, organizational boundaries, or reuse of a VPN-centric topology outweigh the additional cost and throughput considerations. During design review, state the reason you did not use peering; that single sentence prevents future engineers from “optimizing” the architecture by replacing an encrypted boundary with a different trust model.</p><p>Cross-subscription operation deserves explicit ownership. The connection resource belongs to a resource group even though it references gateways in two VNets, so RBAC and change responsibility must be clear before automation runs. If one team owns VNet A and another owns VNet B, both sides should agree on the shared key lifecycle, maintenance windows, and route expectations. BGP can be enabled where supported, but automatic VNet-to-VNet address-prefix updates and BGP-learned routes are different mechanisms; document which one is carrying reachability so future engineers do not diagnose the wrong control plane.</p>
+<h3>Verification</h3>
+<p>Connected status should be paired with byte counters and the source NIC’s effective route. The remote VNet prefix should resolve to VirtualNetworkGateway, not Internet or None. Generate a known TCP flow so the byte counters change in both directions. If the status is Connected but the route is absent, the problem is route propagation or resource association. If the route is present and only one counter direction moves, concentrate on the remote workload, NSG, and return path. This evidence prevents unnecessary recreation of expensive gateways.</p>
+<pre><code>az network vpn-connection show   -g &lt;connection-rg&gt; -n &lt;a-to-b&gt;   --query &quot;{status:connectionStatus,ingress:ingressBytesTransferred,egress:egressBytesTransferred,provisioning:provisioningState}&quot; -o json
+
+az network nic show-effective-route-table   -g &lt;rg-a&gt; -n &lt;vm-a-nic&gt; -o table</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>{
+  &quot;status&quot;: &quot;Connected&quot;,
+  &quot;provisioning&quot;: &quot;Succeeded&quot;,
+  &quot;ingress&quot;: 987654,
+  &quot;egress&quot;: 1234567
+}
+
+Effective route on VNet A VM:
+10.42.0.0/16   VirtualNetworkGateway   Active</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>A `Connecting` or `NotConnected` state immediately focuses the investigation on gateway provisioning, shared key, gateway references, IPsec negotiation, or reachability between gateway public IPs. If the connection is `Connected` but byte counters stay at zero while test traffic is generated, inspect the effective route on the source NIC. A missing remote prefix means the workload is not even forwarding toward the gateway. If counters increase one way only, inspect remote NSGs, return routing, and guest firewalls.</p><p>Overlapping VNet address spaces are a design failure, not a tunnel-tuning problem. Do not try to solve overlap by changing IKE parameters. Likewise, private DNS failures should be tested after literal-IP connectivity. If `ping`/TCP to a remote IP works but the application FQDN does not, configure appropriate private DNS zone links or resolver/forwarding rather than rebuilding the VPN connection.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-vnet-vnet-cli">https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-vnet-vnet-cli</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-vnet-vnet-resource-manager-portal">https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-vnet-vnet-resource-manager-portal</a></div>
+</section><section class="lesson" id="l5" data-domain="Core networking infrastructure">
+<div class="eyebrow">Lesson 5 · Core networking infrastructure · <span class="wc">708 substantive words</span></div>
+<h2>Azure DNS alias records: resource-aware apex and public-IP mappings without stale addresses</h2>
+<h3>Why it matters</h3>
+<p>A normal DNS A record contains an IP value that must be updated when the target changes. Azure DNS alias records instead point the record set at an Azure resource or another record set, allowing DNS resolution to follow the resource lifecycle. This is especially useful for apex records because DNS standards do not allow a traditional CNAME at the zone apex. An Azure DNS alias A/AAAA can point at supported Azure resources while keeping the zone apex usable for other record types.</p>
+<h3>Architecture</h3>
+<p>The Azure DNS zone remains authoritative for the name. The alias record set stores a resource reference rather than a copied IP address. During resolution, Azure DNS resolves the alias target and returns the appropriate address. If a Standard public IP resource changes or is deleted, the alias behavior follows the resource instead of leaving a forgotten static A record behind. Alias record sets support A, AAAA, and CNAME types with documented target types.</p><p>This is control-plane coupling between DNS and an Azure resource, not a traffic proxy. After DNS returns an address, the client connects directly to the target service in the normal way. Therefore an alias record cannot enforce WAF, health probing, or load balancing by itself. If the alias targets Traffic Manager or another service, those capabilities come from the target resource, not from Azure DNS.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L05-azure-dns-alias-records.svg" alt="Azure DNS alias records: resource-aware apex and public-IP mappings without stale addresses architecture"><figcaption>Azure DNS alias records: resource-aware apex and public-IP mappings without stale addresses — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L05-azure-dns-alias-records.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L05-azure-dns-alias-records.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Register the Microsoft.Network resource provider and confirm the DNS zone and target resource are supported. If the zone and alias target are in different subscriptions, the resource provider must be registered in both. Decide whether the desired record type is A, AAAA, or CNAME and whether the target is a public IP, Traffic Manager profile, CDN/Front Door-related resource, or another supported record set. For production cutovers, lower TTL on the previous record in advance if clients may cache the old answer.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code># Inspect the zone.
+az network dns zone show -g &lt;dns-rg&gt; -n &lt;zone-name&gt; -o jsonc
+
+# Obtain the target Azure resource ID.
+TARGET_ID=$(az network public-ip show   -g &lt;network-rg&gt; -n &lt;public-ip-name&gt; --query id -o tsv)
+
+# Create an alias A record set that references the Azure resource.
+az network dns record-set a create   -g &lt;dns-rg&gt; -z &lt;zone-name&gt; -n @   --target-resource &quot;$TARGET_ID&quot;
+
+# Query the record set configuration.
+az network dns record-set a show   -g &lt;dns-rg&gt; -z &lt;zone-name&gt; -n @ -o jsonc</code></pre><p>The CLI creates the DNS record as an alias by setting `targetResource` to the Azure resource ID rather than writing an address into the record set. That resource reference is the important difference from `az network dns record-set a add-record`, which stores an IP value. Use `@` for the zone apex when appropriate. In deployment automation, obtain the target resource ID directly from Azure or Terraform state so DNS follows the resource dependency. Do not hard-code the public IP alongside the alias because doing both creates competing sources of truth.</p></div>
+<h3>Alias lifecycle and authoritative DNS behavior</h3>
+<p>Alias records are valuable in infrastructure-as-code because the dependency is explicit. The DNS object can reference the resource ID created by the same deployment instead of exporting an IP string and passing it through a separate pipeline. That reduces stale configuration during redeployment. For apex use, this also avoids workarounds involving redirects or unsupported CNAME semantics. Always test both the Azure record-set resource and an external DNS lookup; one proves control-plane intent and the other proves delegation and resolver-visible behavior.</p>
+<h3>Verification</h3>
+<p>Verification has two layers. The Azure record-set object must show the intended target resource ID, proving the control-plane relationship. A DNS query from outside Azure must then return the address currently associated with that resource, proving delegation and authoritative resolution. If you are changing from a literal A record to an alias, compare the answer before and after and honor TTL behavior. For apex records, also query SOA/NS data to ensure the zone delegation remains intact; aliasing the A record does not change authority.</p>
+<pre><code>az network dns record-set a show   -g &lt;dns-rg&gt; -z &lt;zone-name&gt; -n @   --query &quot;{targetResource:targetResource.id,ttl:ttl}&quot; -o json
+
+dig &lt;zone-name&gt; A +short
+dig &lt;zone-name&gt; SOA +short</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>{
+  &quot;targetResource&quot;: &quot;/subscriptions/.../providers/Microsoft.Network/publicIPAddresses/app-pip&quot;,
+  &quot;ttl&quot;: 3600
+}
+
+$ dig example.com A +short
+203.0.113.25</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>If the Azure record set shows the correct `targetResource` but public resolvers return the old address, inspect delegation and caching before recreating the record. Query the authoritative Azure name server directly and compare it with a recursive resolver. If authoritative data is correct but recursive data is stale, TTL/cache expiry is the expected mechanism. If the record cannot be created, verify that the target type is supported and that Microsoft.Network is registered in both subscriptions when applicable.</p><p>A second failure is assuming alias records provide health-based failover. If the target public IP is reachable but the application behind it is down, Azure DNS does not automatically switch to another resource unless the alias points to a service such as Traffic Manager that implements health-aware routing. Choose the target resource based on the behavior required, then use the alias to remove the fragile copy of its address.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/dns/dns-alias">https://learn.microsoft.com/en-us/azure/dns/dns-alias</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/dns/public-dns-overview">https://learn.microsoft.com/en-us/azure/dns/public-dns-overview</a></div>
+</section><section class="lesson" id="l6" data-domain="Core networking infrastructure">
+<div class="eyebrow">Lesson 6 · Core networking infrastructure · <span class="wc">802 substantive words</span></div>
+<h2>Standard Load Balancer Floating IP: direct server return semantics for NVAs and multi-VIP services</h2>
+<h3>Why it matters</h3>
+<p>Floating IP changes how Azure Load Balancer delivers packets to a backend so the frontend VIP can be used by the backend application or appliance without the normal destination-address translation behavior expected in a simple load-balanced web farm. This is important for NVAs, SQL Always On listeners, and designs with multiple frontend IPs mapped to the same backend port. Engineers often enable Floating IP because a vendor guide says to do so, but the feature only makes sense when the backend application is prepared for the resulting packet semantics.</p>
+<h3>Architecture</h3>
+<p>With a conventional load-balancing rule, Azure maps the frontend IP/port to a backend IP/port. With Floating IP enabled, Azure uses a floating-IP/direct-server-return style mapping that allows multiple rules to reuse backend ports and lets the backend respond using the frontend identity required by certain clustered applications. The backend operating system or NVA must be configured according to the application/vendor model so that it accepts traffic addressed in the expected way. The load balancer itself remains a Layer-4 flow distributor and does not synchronize application state.</p><p>For stateful NVAs, Floating IP is often paired with HA Ports or multiple frontend configurations, but it does not automatically solve asymmetric routing. Forward and return paths still need a supported vendor architecture. For database listeners, the guest/cluster configuration must bind or recognize the listener address correctly. The Azure rule and the guest network stack are therefore two halves of the feature.</p>
+<figure class="diagram"><img src="images/2026-09-10-08-03-L06-load-balancer-floating-ip.svg" alt="Standard Load Balancer Floating IP: direct server return semantics for NVAs and multi-VIP services architecture"><figcaption>Standard Load Balancer Floating IP: direct server return semantics for NVAs and multi-VIP services — full-width Azure architecture view. Diagram is schematic and not to scale.</figcaption><div class="diagram-links"><a href="images/2026-09-10-08-03-L06-load-balancer-floating-ip.drawio">Editable draw.io source</a> · <a href="images/2026-09-10-08-03-L06-load-balancer-floating-ip.svg">Open SVG</a></div></figure>
+<h3>Prerequisites and implementation</h3>
+<p>Use a Standard Load Balancer and confirm the workload specifically supports Floating IP/DSR behavior. Create the frontend IP configuration, backend pool, and health probe first. Check whether the design requires multiple frontends, HA Ports, or a protocol-specific rule. On the backend, follow the vendor’s instructions for loopback/listener configuration and weak-host or equivalent behavior where applicable. Do not enable Floating IP on an ordinary application simply because it sounds like a high-availability option.</p>
+<div class="lab"><div class="code-label">Implementation</div><pre><code># Create the rule with Floating IP / direct-server-return semantics.
+az network lb rule create \
+  -g &lt;resource-group&gt; --lb-name &lt;load-balancer&gt; \
+  -n &lt;rule-name&gt; --protocol All \
+  --frontend-ip-name &lt;frontend-config&gt; \
+  --frontend-port 0 \
+  --backend-pool-name &lt;backend-pool&gt; \
+  --backend-port 0 \
+  --probe-name &lt;health-probe&gt; \
+  --idle-timeout-in-minutes 30 \
+  --enable-floating-ip
+
+az network lb rule show \
+  -g &lt;resource-group&gt; --lb-name &lt;load-balancer&gt; \
+  -n &lt;rule-name&gt; \
+  --query &quot;{floatingIP:enableFloatingIp,frontendPort:frontendPort,backendPort:backendPort,protocol:protocol}&quot; -o json</code></pre><p>`--floating-ip true` changes load-balancer packet handling for that rule; it does not modify the guest operating system to accept the frontend identity. Before enabling it, complete the backend-side listener or loopback configuration required by the application vendor. The frontend and backend ports may be identical, which is common for clustered listeners. If you are combining Floating IP with HA Ports, validate the exact vendor design because an all-ports rule and direct-server-return semantics can interact with session ownership in ways that a basic web-farm tutorial does not cover.</p></div>
+<h3>Floating IP backend behavior and service design</h3>
+<p>Multi-VIP designs are where Floating IP becomes easiest to understand. Several frontend VIPs can map the same service port to the same backend set without forcing each backend to listen on unique translated ports. That simplifies certain clustered appliances but increases the importance of clean documentation: every frontend, rule, probe, backend listener, and return-path policy should be named and tested independently. A successful health probe proves only the probe endpoint, not every listener represented by the load-balancing rules.</p><p>Floating IP also changes the backend host requirement. Because the backend must accept traffic addressed to the load-balancer frontend rather than only its NIC address, clustered appliances commonly bind the frontend address to a loopback or vendor-specific virtual interface. If the Azure rule has Floating IP enabled but the guest never owns or accepts that frontend address, health can look normal while service packets are rejected locally. Validate both Azure rule state and the appliance’s local listener/interface model; this is why Floating IP is often documented together with database listeners and active/passive NVA patterns.</p>
+<h3>Verification</h3>
+<p>Successful Azure output proves the rule has Floating IP enabled and the probe can keep backends eligible. It does not prove the backend accepted a packet addressed according to the DSR model. Use a packet capture or application listener command on one backend while sending a connection to the frontend VIP. Confirm the destination/port seen by the backend matches the vendor expectation and that the response leaves using the supported return path. This end-to-end check is essential when multiple VIPs reuse the same backend port.</p>
+<pre><code>az network lb rule show   -g &lt;resource-group&gt; --lb-name &lt;load-balancer&gt;   -n &lt;rule-name&gt; -o jsonc
+
+az network lb probe show   -g &lt;resource-group&gt; --lb-name &lt;load-balancer&gt;   -n &lt;health-probe&gt; -o jsonc</code></pre>
+<div class="expected"><strong>Representative successful output/state</strong><pre class="output"><code>{
+  &quot;enableFloatingIp&quot;: true,
+  &quot;frontendPort&quot;: 1433,
+  &quot;backendPort&quot;: 1433,
+  &quot;protocol&quot;: &quot;Tcp&quot;,
+  &quot;provisioningState&quot;: &quot;Succeeded&quot;
+}
+
+Backend health:
+node01 Healthy
+node02 Healthy</code></pre></div>
+<h3>Troubleshooting</h3>
+<p>If the rule is Succeeded and backends are Healthy but the application never accepts connections, inspect the backend OS/application binding before changing the load balancer. A common symptom is SYN packets arriving but no listener bound to the floating/listener address. On a Windows cluster or NVA, use the vendor-recommended interface/listener commands and packet capture to confirm the backend recognizes the destination. If packets do not arrive at all, return to probe state, backend-pool membership, and the load-balancing rule.</p><p>For intermittent stateful sessions, capture both directions. If the forward flow enters one NVA while the return bypasses the expected frontend or reaches another unsynchronized appliance, that is a routing/session design problem. Floating IP affects packet delivery semantics but does not promise state synchronization. Correct the return UDR/BGP/vendor clustering pattern instead of toggling Floating IP repeatedly.</p>
+<div class="failure"><strong>What failing evidence means:</strong> use the commands above to compare the failing state with the expected state, then correct the feature-specific layer identified in this lesson before changing unrelated Azure controls.</div>
+<div class="sources"><strong>Primary:</strong> <a href="https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-floating-ip">https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-floating-ip</a><br><strong>Implementation / scenario:</strong> <a href="https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-multivip-overview">https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-multivip-overview</a></div>
+</section><section class="lesson" id="l7" data-domain="Core networking infrastructure">
+<div class="eyebrow">Lesson 7 · Core networking infrastructure · <span class="wc">770
