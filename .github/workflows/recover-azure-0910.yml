@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Recover staged stream and extract complete TAR members
+      - name: Recover partial staged report member
         shell: bash
         run: |
           set -u
@@ -18,29 +18,26 @@ jobs:
           gzip -dc /tmp/azure0910.gz > /tmp/azure0910.tar || true
           python - <<'PY'
           from pathlib import Path
-          b=Path('/tmp/azure0910.tar').read_bytes()
-          print('decompressed bytes',len(b))
-          pos=0; extracted=[]
-          while pos+512 <= len(b):
+          b=Path('/tmp/azure0910.tar').read_bytes(); pos=0
+          while pos+512<=len(b):
               h=b[pos:pos+512]
               if h==b'\0'*512: break
               name=h[:100].split(b'\0',1)[0].decode('utf-8','replace')
-              try: size=int(h[124:136].split(b'\0',1)[0].strip() or b'0',8)
-              except Exception: break
+              try:size=int(h[124:136].split(b'\0',1)[0].strip() or b'0',8)
+              except:break
               start=pos+512; end=start+size
-              print('member',name,'size',size,'available',max(0,len(b)-start))
-              if end>len(b):
-                  print('INCOMPLETE',name); break
-              if name.startswith('docs/'):
-                  p=Path(name); p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(b[start:end]); extracted.append(name)
+              if name.endswith('Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-08-03.html'):
+                  data=b[start:min(end,len(b))]
+                  Path('docs/.azure0910-partial-report.html').write_bytes(data)
+                  Path('docs/.azure0910-recovery-status.txt').write_text(f'{len(data)}/{size} bytes recovered\n')
+                  break
+              if end>len(b): break
               pos=start+((size+511)//512)*512
-          Path('docs/.azure0910-recovery-status.txt').write_text('\n'.join(extracted) or 'NO COMPLETE DOC MEMBERS\n')
           PY
-      - name: Commit recovered complete members and status
-        shell: bash
+      - name: Commit partial recovery
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add docs/.azure0910-recovery-status.txt docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-08-03.html 2>/dev/null || git add docs/.azure0910-recovery-status.txt
-          git commit -m 'Recover complete Azure September 10 staged report member' || exit 0
+          git add docs/.azure0910-partial-report.html docs/.azure0910-recovery-status.txt
+          git commit -m 'Expose partial September 10 report recovery' || exit 0
           git push
