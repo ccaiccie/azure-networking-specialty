@@ -1,0 +1,27 @@
+{
+  "lesson_count": 12,
+  "substantive_word_counts": {
+    "1": 811,
+    "2": 782,
+    "3": 848,
+    "4": 723,
+    "5": 800,
+    "6": 748,
+    "7": 788,
+    "8": 804,
+    "9": 719,
+    "10": 738,
+    "11": 788,
+    "12": 860
+  },
+  "question_distribution": {
+    "H": 15,
+    "C": 13,
+    "R": 10,
+    "S": 12
+  },
+  "question_count": 50,
+  "diagram_pairs": 12,
+  "source_urls": 24,
+  "errors": []
+}
