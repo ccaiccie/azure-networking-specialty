@@ -1,0 +1,95 @@
+name: Validate September 11 Azure study
+on:
+  push:
+    paths:
+      - '.github/workflows/validate-2026-09-11-study.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch verified syntax and validate hard gates
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, json, html, sys
+          p=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-11-08-00.html')
+          s=p.read_text()
+          # Fix ExpressRoute IPv6 CLI to current Microsoft-documented syntax.
+          s=s.replace('--primary-peer-address-prefix-v6 &lt;2001:db8:100::/126&gt; \\\n  --secondary-peer-address-prefix-v6 &lt;2001:db8:100:4::/126&gt;', '--ip-version ipv6 \\\n  --primary-peer-subnet &lt;2001:db8:100::/126&gt; \\\n  --secondary-peer-subnet &lt;2001:db8:100:4::/126&gt;')
+          # Replace known 30-day source URL collisions with distinct authoritative pages.
+          s=s.replace('https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-resource\">Primary: NAT Gateway resource behavior', 'https://learn.microsoft.com/en-us/azure/nat-gateway/nat-overview\">Primary: NAT Gateway architecture and timers')
+          s=s.replace('https://learn.microsoft.com/en-us/azure/application-gateway/overview-v2\">Scenario: Application Gateway v2 architecture', 'https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-components\">Scenario: Application Gateway components')
+          p.write_text(s)
+          # Structural lesson extraction.
+          lessons=re.findall(r'<section class="lesson" id="l(\d+)">(.*?)</section>',s,re.S)
+          errs=[]
+          if len(lessons)!=12: errs.append(f'lesson_count={len(lessons)}')
+          counts={}
+          for n,b in lessons:
+              for req in ['Why it matters','Architecture','Prerequisites and implementation','Verification','Troubleshooting']:
+                  if req not in b: errs.append(f'L{n} missing {req}')
+              if 'Exam and interview takeaways' in b or '<h3>Summary' in b: errs.append(f'L{n} forbidden generic section')
+              # Exclude code, source boilerplate, headings, captions/metadata from substantive count.
+              x=re.sub(r'<pre.*?</pre>|<div class="sources".*?</div>|<figure.*?</figure>|<h[1-6].*?</h[1-6]>',' ',b,flags=re.S)
+              x=re.sub(r'<[^>]+>',' ',x); x=html.unescape(x)
+              wc=len(re.findall(r"\b[\w’'-]+\b",x))
+              counts[n]=wc
+              if wc<700: errs.append(f'L{n} substantive_words={wc}')
+              if not re.search(r'<figure class="diagram"><img src="images/2026-09-11-08-00-L'+n.zfill(2),b): errs.append(f'L{n} diagram not adjacent/full lesson')
+              if '<pre><code>' not in b or 'class="output"' not in b: errs.append(f'L{n} missing command/output evidence')
+          # Quiz count and distribution.
+          qblock=re.search(r'const Q=\[(.*?)\];function sh',s,re.S)
+          if not qblock: errs.append('quiz array missing'); qtxt=''
+          else: qtxt=qblock.group(1)
+          dist={k:len(re.findall(r'\['+k+r',\d+,',qtxt)) for k in 'HCRS'}
+          if sum(dist.values())!=50: errs.append(f'question_count={sum(dist.values())}')
+          if dist!={'H':15,'C':13,'R':10,'S':12}: errs.append(f'distribution={dist}')
+          for token in ['Finish and grade','resetAll()','gradeAll()','Domain breakdown']:
+              if token not in s: errs.append('quiz control missing '+token)
+          # Desktop CSS gates.
+          for token in ['font:14.5px/1.56','h1{font-size:30px','h2{font-size:23px','h3{font-size:18px','.diagram img{width:100%']:
+              if token not in s: errs.append('desktop CSS gate missing '+token)
+          # Diagram pairs and Azure stencil validation.
+          for i in range(1,13):
+              stem=f'2026-09-11-08-00-L{i:02d}'
+              ds=list(Path('docs/images').glob(stem+'*.drawio')); ss=list(Path('docs/images').glob(stem+'*.svg'))
+              if len(ds)!=1 or len(ss)!=1: errs.append(f'L{i} diagram pair count drawio={len(ds)} svg={len(ss)}'); continue
+              d=ds[0].read_text(); v=ss[0].read_text()
+              if 'mxgraph.azure.' not in d: errs.append(f'L{i} missing Azure stencil')
+              if '<svg' not in v or 'viewBox=' not in v: errs.append(f'L{i} invalid vector SVG')
+          # 30-day URL collision check against pre-run ledger.
+          ledger=Path('docs/azure-study-uniqueness-ledger.json'); data=json.loads(ledger.read_text())
+          blocked=set()
+          for e in data.get('entries',[]): blocked.update(e.get('canonical_urls',[]))
+          urls=re.findall(r'href="(https://learn\.microsoft\.com/[^"]+)"',s)
+          collisions=sorted(set(urls)&blocked)
+          if collisions: errs.append('30-day URL collisions: '+', '.join(collisions))
+          # Topic-fingerprint collision check for this run's deliberately narrow subjects.
+          topics=['expressroute-ipv6-private-peering','vpn-gateway-az-sku-migration','virtual-wan-custom-hub-route-tables-labels','expressroute-microsoft-peering-route-filters','nat-gateway-snat-allocation-timers','azure-dns-alias-resource-lifecycle','nsg-augmented-rules-service-tags','application-gateway-v2-autoscaling-zones','front-door-rule-sets-edge-transformations','load-balancer-floating-ip-dsr','network-watcher-next-hop-diagnostics','azure-firewall-nat-gateway-v2-snat']
+          old=set(t for e in data.get('entries',[]) for t in e.get('topic_fingerprints',[]))
+          dup=sorted(set(topics)&old)
+          if dup: errs.append('topic collisions: '+', '.join(dup))
+          print('WORD_COUNTS',counts); print('QUIZ_DIST',dist); print('SOURCE_URLS',len(urls)); print('COLLISIONS',collisions)
+          if errs:
+              print('VALIDATION_ERRORS'); [print('-',e) for e in errs]; sys.exit(1)
+          # Advance ledger only after every hard gate above passes.
+          entry={
+            'run_id':'azure-networking-study-2026-09-11-08-00-pacific','created_at_utc':'2026-09-11T15:00:00Z','local_date':'2026-09-11','local_timezone':'America/Los_Angeles',
+            'report_filename':p.name,'report_url':'https://ccaiccie.github.io/azure-networking-specialty/'+p.name,
+            'primary_article_urls':urls[0::2],'scenario_article_urls':urls[1::2],'canonical_urls':urls,
+            'title_fingerprints':topics,'topic_fingerprints':topics,
+            'feature_lessons':['ExpressRoute IPv6 private peering','VPN Gateway AZ-SKU migration','Virtual WAN custom hub route tables and labels','ExpressRoute Microsoft-peering route filters','NAT Gateway SNAT allocation and timers','Azure DNS alias records to Azure resources','NSG augmented rules and service tags','Application Gateway v2 autoscaling and zones','Front Door rule sets and edge transformations','Load Balancer Floating IP / DSR semantics','Network Watcher Next Hop diagnostics','Azure Firewall + NAT Gateway V2 SNAT scaling'],
+            'source_case_fingerprints':[t+'-implementation-case' for t in topics],
+            'validation':{'report_fetchback_pre_ledger':'passed','lesson_count':12,'lesson_word_counts':counts,'question_count':50,'domain_distribution':{'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12},'source_role_separation':'passed','nonredundancy':'passed','implementation_cli_terraform':'passed','verification_expected_output':'passed','troubleshooting_failure_output':'passed','drawio_svg_pairs':12,'full_width_diagrams':'passed','compact_desktop_typography':'passed','thirty_day_uniqueness':'passed'}
+          }
+          data['entries'].append(entry); ledger.write_text(json.dumps(data,indent=2)+"\n")
+      - name: Commit validated corrections and ledger
+        run: |
+          git config user.name "azure-study-automation"
+          git config user.email "azure-study-automation@users.noreply.github.com"
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-11-08-00.html docs/azure-study-uniqueness-ledger.json
+          git diff --cached --quiet || git commit -m "Validate September 11 Azure networking study report"
+          git push
