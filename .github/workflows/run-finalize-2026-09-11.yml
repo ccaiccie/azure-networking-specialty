@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate and update report
-        run: python scripts/finalize_20260911.py
+        run: python scripts/finalize_20260911_v2.py
       - name: Commit validated report
         run: |
           git config user.name "azure-study-automation"
