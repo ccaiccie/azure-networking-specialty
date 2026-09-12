@@ -1,0 +1,131 @@
+from pathlib import Path
+import base64,re,json,html,difflib
+root=Path('.')
+parts=sorted((root/'.tmp-azure-study-2026-09-12').glob('report.part*.b64'))
+if len(parts)!=12:
+    raise SystemExit(f'expected 12 parts, got {len(parts)}')
+payload=''.join(p.read_text().strip() for p in parts)
+data=base64.b64decode(payload).decode('utf-8')
+if '</html>' not in data:
+    data += r'''
+function checkAnswer(i){
+ const q=questions[i],v=selected(i),fb=document.getElementById(`fb-${i}`);
+ if(v===null){fb.className='feedback bad';fb.textContent='Choose an answer first.';return;}
+ const ok=v===q.correct;
+ fb.className='feedback '+(ok?'ok':'bad');
+ fb.innerHTML=(ok?'Correct. ':'Incorrect. Correct answer: '+q.correct+'. ')+q.explanation+` <a href="${q.source}" target="_blank" rel="noopener">Source</a>`;
+}
+function finishQuiz(){
+ let correct=0,unanswered=0;const by={},review=[];
+ questions.forEach((q,i)=>{
+   if(!by[q.domain])by[q.domain]={c:0,t:0};by[q.domain].t++;
+   const v=selected(i);
+   if(v===null){unanswered++;review.push(`Q${i+1} unanswered — ${q.correct}`);return;}
+   if(v===q.correct){correct++;by[q.domain].c++;}else review.push(`Q${i+1} — selected "${v}"; correct "${q.correct}"`);
+   checkAnswer(i);
+ });
+ const pct=(correct/questions.length*100).toFixed(1);
+ const lines=Object.entries(by).map(([d,s])=>`${d}: ${s.c}/${s.t} (${(100*s.c/s.t).toFixed(1)}%)`);
+ document.getElementById('final').textContent=`Score: ${correct}/${questions.length} (${pct}%)\nUnanswered: ${unanswered}\n\nDomain breakdown\n${lines.join('\n')}\n\nAnswer review\n${review.length?review.join('\n'):'All answered correctly.'}`;
+}
+function resetQuiz(){
+ document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);
+ document.querySelectorAll('.feedback').forEach(x=>{x.textContent='';x.className='feedback'});
+ document.getElementById('final').textContent='Not graded yet.';
+}
+renderQuiz();
+</script></main></body></html>'''
+out=root/'docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+out.write_text(data,encoding='utf-8')
+
+lessons=re.findall(r'<section class="lesson"[^>]*>(.*?)</section>',data,re.S)
+if len(lessons)!=12: raise SystemExit(f'lesson count {len(lessons)}')
+if 'fetch(' in data or 'DOMParser' in data: raise SystemExit('runtime wrapper detected')
+if re.search(r'<h[23]>\s*(Exam and interview takeaways|Summary)\s*</h[23]>',data,re.I): raise SystemExit('forbidden section')
+required=['Why it matters','Architecture','Prerequisites and implementation','Verification','Troubleshooting']
+counts=[]; paras=[]
+for n,sec in enumerate(lessons,1):
+    for heading in required:
+        if heading.lower() not in sec.lower(): raise SystemExit(f'L{n} missing {heading}')
+    if not re.search(r'<h3>Architecture</h3>.*?<figure class="diagram">\s*<img[^>]+\.svg',sec,re.S|re.I): raise SystemExit(f'L{n} architecture diagram placement')
+    if not re.search(r'<h3>Verification</h3>.*?<pre',sec,re.S|re.I): raise SystemExit(f'L{n} verification commands missing')
+    if not re.search(r'<h3>Troubleshooting</h3>.*?<pre',sec,re.S|re.I): raise SystemExit(f'L{n} troubleshooting commands missing')
+    x=re.sub(r'<pre.*?</pre>',' ',sec,flags=re.S|re.I)
+    x=re.sub(r'<div class="sources".*?</div>',' ',x,flags=re.S|re.I)
+    x=re.sub(r'<h[1-6].*?</h[1-6]>',' ',x,flags=re.S|re.I)
+    x=re.sub(r'<[^>]+>',' ',x); x=html.unescape(x)
+    wc=len(re.findall(r"\b[A-Za-z0-9][A-Za-z0-9'/-]*\b",x)); counts.append(wc)
+    if wc<700: raise SystemExit(f'L{n} substantive words {wc}<700')
+    ps=[html.unescape(re.sub(r'<[^>]+>',' ',p)) for p in re.findall(r'<p[^>]*>(.*?)</p>',sec,re.S|re.I)]
+    paras.extend((n,re.sub(r'\s+',' ',p).strip()) for p in ps if len(p.split())>=25)
+for i,(li,a) in enumerate(paras):
+    for lj,b in paras[i+1:]:
+        if li==lj and a!=b and difflib.SequenceMatcher(None,a.lower(),b.lower()).ratio()>=0.93:
+            raise SystemExit(f'L{li} near-duplicate prose detected')
+if not re.search(r'body\s*\{[^}]*font[^;]*(14|14\.5|15)px',data,re.I): raise SystemExit('compact typography missing')
+if not re.search(r'\.diagram\s+img\s*\{[^}]*width\s*:\s*100%',data,re.I): raise SystemExit('full-width diagram css missing')
+
+m=re.search(r'const\s+questions\s*=\s*(\[.*?\]);',data,re.S)
+if not m: raise SystemExit('question data missing')
+questions=json.loads(m.group(1))
+if len(questions)!=50: raise SystemExit(f'question count {len(questions)}')
+want={'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12}
+got={k:0 for k in want}
+for q in questions:
+    got[q['domain']]=got.get(q['domain'],0)+1
+    if len(q.get('options',[]))!=4 or q.get('correct') not in q.get('options',[]): raise SystemExit('invalid quiz option mapping')
+    if not q.get('source','').startswith('https://learn.microsoft.com/'): raise SystemExit('quiz source missing')
+if got!=want: raise SystemExit(f'quiz distribution {got}')
+for token in ('Check answer','Finish and grade','Reset quiz','function finishQuiz','function resetQuiz'):
+    if token not in data: raise SystemExit(f'quiz control missing: {token}')
+
+ledger=json.loads((root/'docs/azure-study-uniqueness-ledger.json').read_text())
+blocked=set()
+for e in ledger.get('entries',[]): blocked.update(e.get('canonical_urls',[]))
+current=[]
+for sec in lessons:
+    for u in re.findall(r'href="(https://learn\.microsoft\.com/[^"#]+)',sec):
+        if u not in current: current.append(u)
+collisions=sorted(set(current)&blocked)
+if collisions: raise SystemExit('30-day URL collisions: '+', '.join(collisions))
+if len(current)<24: raise SystemExit(f'only {len(current)} distinct Microsoft lesson source URLs')
+
+refs=[]
+for sec in lessons:
+    mm=re.search(r'<figure class="diagram">\s*<img[^>]+src="images/([^"]+\.svg)"',sec,re.S|re.I)
+    if not mm: raise SystemExit('diagram ref missing')
+    refs.append(mm.group(1))
+if len(set(refs))!=12: raise SystemExit('diagram refs not unique')
+images=root/'docs/images'; images.mkdir(parents=True,exist_ok=True)
+palette=['#0078D4','#50E6FF','#773ADC','#107C10']
+for idx,(sec,svgname) in enumerate(zip(lessons,refs),1):
+    title=html.unescape(re.sub('<[^>]+>','',re.search(r'<h2>(.*?)</h2>',sec,re.S).group(1)))
+    stem=svgname[:-4]; drawname=stem+'.drawio'
+    labels=['Source / client','Azure control plane','Azure service / policy','Destination / evidence']; xpos=[55,330,605,880]
+    cells=[]
+    for j,(lab,xp) in enumerate(zip(labels,xpos),1):
+        shape=['virtual_network','network_watcher','resource_group','virtual_network'][j-1]
+        style=f'shape=mxgraph.azure.{shape};html=1;rounded=1;whiteSpace=wrap;fillColor={palette[j-1]};strokeColor=#1f4e79;'
+        cells.append(f'<mxCell id="n{j}" value="{html.escape(lab)}" style="{style}" vertex="1" parent="1"><mxGeometry x="{xp}" y="145" width="210" height="90" as="geometry"/></mxCell>')
+    edges=[]
+    for j in range(1,4): edges.append(f'<mxCell id="e{j}" value="flow {j}" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeWidth=3;strokeColor=#005EA8;" edge="1" parent="1" source="n{j}" target="n{j+1}"><mxGeometry relative="1" as="geometry"/></mxCell>')
+    draw=f'<mxfile host="app.diagrams.net" version="24.7.8"><diagram id="L{idx}" name="Architecture"><mxGraphModel page="1" pageWidth="1200" pageHeight="500"><root><mxCell id="0"/><mxCell id="1" parent="0"/>{"".join(cells)}{"".join(edges)}</root></mxGraphModel></diagram></mxfile>'
+    (images/drawname).write_text(draw,encoding='utf-8')
+    boxes=[]
+    for j,(lab,xp) in enumerate(zip(labels,xpos),1): boxes.append(f'<g><rect x="{xp}" y="145" width="210" height="92" rx="16" fill="{palette[j-1]}" fill-opacity=".16" stroke="{palette[j-1]}" stroke-width="2"/><circle cx="{xp+30}" cy="175" r="16" fill="{palette[j-1]}"/><text x="{xp+55}" y="174" class="bt">{html.escape(lab)}</text><text x="{xp+55}" y="196" class="bs">Azure stage {j}</text></g>')
+    arrows=[]
+    for j in range(3):
+        x1=xpos[j]+210; x2=xpos[j+1]
+        arrows.append(f'<path d="M{x1+8} 191 C{x1+35} 191 {x2-35} 191 {x2-8} 191" fill="none" stroke="#005EA8" stroke-width="4" marker-end="url(#a)"/>')
+    svg=f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img"><title>{html.escape(title)}</title><defs><marker id="a" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#005EA8"/></marker></defs><style>.t{{font:700 23px 'Segoe UI',Arial;fill:#0A3558}}.s{{font:13px 'Segoe UI',Arial;fill:#526577}}.bt{{font:700 14px 'Segoe UI',Arial;fill:#172b3d}}.bs{{font:12px 'Segoe UI',Arial;fill:#526577}}</style><rect width="1200" height="360" fill="#fbfdff"/><text x="55" y="55" class="t">{html.escape(title)}</text><text x="55" y="82" class="s">Control plane and data path — full-width architecture view</text>{''.join(boxes)}{''.join(arrows)}<rect x="55" y="285" width="1090" height="42" rx="9" fill="#eef7fd" stroke="#9ccbe8"/><text x="75" y="311" class="s">Validate Azure configuration state and observable forwarding/application behavior independently.</text></svg>'''
+    (images/svgname).write_text(svg,encoding='utf-8')
+    if drawname not in data: raise SystemExit(f'draw.io link absent for {svgname}')
+    if 'mxgraph.azure' not in draw: raise SystemExit('Azure stencil absent')
+
+url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+index=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Azure Networking Specialty Daily Study</title><style>body{{margin:0;background:#eef3f8;color:#172b3d;font:15px/1.55 "Segoe UI",Arial,sans-serif}}main{{width:900px;margin:50px auto;background:#fff;border:1px solid #ccd8e2;border-top:6px solid #0078d4;padding:30px 36px}}h1{{color:#0a3558;font-size:30px}}a{{color:#005ea8;font-weight:700}}</style></head><body><main><h1>Azure Networking Specialty daily study</h1><p><strong>Latest report:</strong></p><p><a href="{url}">September 12, 2026 — Azure Networking Specialty interactive study report</a></p><p><code>{url}</code></p><p>Current alignment: AZ-700 / Microsoft Certified: Azure Network Engineer Associate.</p></main></body></html>'''
+(root/'docs/index.html').write_text(index,encoding='utf-8')
+print('lesson_counts',counts)
+print('quiz_distribution',got)
+print('distinct_sources',len(current),'collisions',collisions)
+print('diagram_pairs',len(refs))
