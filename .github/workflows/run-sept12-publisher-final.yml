@@ -10,7 +10,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      PUBLISH_REVISION: source-uniqueness-fixed
+      PUBLISH_REVISION: diagnose-last-source-role
     steps:
       - uses: actions/checkout@v4
       - name: Validate and build report
