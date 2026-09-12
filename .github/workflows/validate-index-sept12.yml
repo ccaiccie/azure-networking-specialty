@@ -1,0 +1,79 @@
+name: Validate and index Sept 12 Azure study report
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/validate-index-sept12.yml'
+      - 'docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate static report and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPORT='docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+          test -f "$REPORT"
+          test "$(wc -c < "$REPORT")" -eq 134592
+          python - <<'PY'
+          from pathlib import Path
+          import re, json, html
+          p=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html')
+          s=p.read_text()
+          assert s.count('<section class="lesson"') == 12
+          assert 'Exam and interview takeaways' not in s
+          assert '<h3>Summary</h3>' not in s
+          assert 'body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.56' in s
+          assert '.architecture-diagram img{display:block;width:100%;height:auto}' in s
+          assert 'function gradeAll' in s and 'function resetQuiz' in s and '</html>' in s
+          m=re.search(r'const questions=(\[.*?\]);\n\nfunction seeded',s,re.S)
+          assert m
+          qs=json.loads(m.group(1))
+          assert len(qs)==50
+          from collections import Counter
+          c=Counter(q['domain'] for q in qs)
+          assert c==Counter({'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12})
+          sections=re.findall(r'<section class="lesson".*?</section>',s,re.S)
+          counts=[]
+          for sec in sections:
+              sec=re.sub(r'<pre.*?</pre>',' ',sec,flags=re.S)
+              sec=re.sub(r'<div class="sources".*?</div>',' ',sec,flags=re.S)
+              sec=re.sub(r'<[^>]+>',' ',sec)
+              words=re.findall(r"\b[\w'’/-]+\b",html.unescape(sec))
+              counts.append(len(words))
+          assert min(counts)>=700, counts
+          imgs=re.findall(r'<img src="(images/2026-09-12-08-00-[^"]+\.svg)"',s)
+          assert len(imgs)==12 and len(set(imgs))==12
+          print('lesson_counts', counts)
+          print('quiz_domains', dict(c))
+          PY
+          for f in docs/images/2026-09-12-08-00-*.svg; do grep -q '<svg' "$f"; done
+          for f in docs/images/2026-09-12-08-00-*.drawio; do grep -q 'mxgraph.azure2' "$f"; done
+          test "$(find docs/images -maxdepth 1 -name '2026-09-12-08-00-*.svg' | wc -l)" -eq 12
+          test "$(find docs/images -maxdepth 1 -name '2026-09-12-08-00-*.drawio' | wc -l)" -eq 12
+      - name: Point index to validated report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('docs/index.html')
+          s=p.read_text()
+          url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+          s2=re.sub(r'https://ccaiccie\.github\.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_[0-9-]+\.html',url,s)
+          if s2==s and url not in s:
+              raise SystemExit('index did not contain replaceable report URL')
+          p.write_text(s2)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'Point index to Sept 12 Azure study report'
+            git push
+          fi
