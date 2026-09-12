@@ -9,6 +9,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      PUBLISH_REVISION: source-uniqueness-fixed
     steps:
       - uses: actions/checkout@v4
       - name: Validate and build report
