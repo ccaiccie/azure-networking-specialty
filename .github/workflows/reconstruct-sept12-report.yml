@@ -1,0 +1,37 @@
+name: Reconstruct Sept 12 Azure study report
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.tmp-azure-study-2026-09-12/**'
+      - '.github/workflows/reconstruct-sept12-report.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct exact validated report
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(.tmp-azure-study-2026-09-12/report.part*.b64)
+          if [ ${#parts[@]} -eq 0 ]; then
+            echo 'No staging parts; nothing to do.'
+            exit 0
+          fi
+          test ${#parts[@]} -eq 12
+          cat "${parts[@]}" | tr -d '\n' | base64 -d > docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html
+          test "$(wc -c < docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html)" -eq 134592
+          grep -q 'id="lesson-12"' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html
+          grep -q 'function gradeAll' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html
+          grep -q 'function resetQuiz' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html
+          grep -q '</html>' docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html
+          rm -rf .tmp-azure-study-2026-09-12
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Publish Sept 12 Azure networking study report'
+          git push
