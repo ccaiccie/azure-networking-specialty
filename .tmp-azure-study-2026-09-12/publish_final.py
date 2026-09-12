@@ -50,6 +50,15 @@ for line in src.splitlines():
         lines.append(indent+'questions=hy+core+route+security')
         lines.append(indent+"data=data[:m.start(1)]+json.dumps(questions,ensure_ascii=False,separators=(',',':'))+data[m.end(1):]")
         lines.append(indent+"out.write_text(data,encoding='utf-8')")
+    elif s.startswith("if len(current)<24:"):
+        lines.append(indent+"from collections import Counter")
+        lines.append(indent+"all_lesson_urls=[]")
+        lines.append(indent+"for lesson_no,sec in enumerate(lessons,1):")
+        lines.append(indent+"    urls=re.findall(r'href=\"(https://learn\\.microsoft\\.com/[^\"#]+)',sec)")
+        lines.append(indent+"    print('LESSON_SOURCES',lesson_no,urls)")
+        lines.append(indent+"    all_lesson_urls.extend(urls)")
+        lines.append(indent+"print('DUPLICATE_SOURCES',[u for u,c in Counter(all_lesson_urls).items() if c>1])")
+        lines.append(line)
     else:
         lines.append(line)
 exec(compile('\n'.join(lines),'publish_final.py','exec'))
