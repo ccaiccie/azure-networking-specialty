@@ -1,0 +1,22 @@
+name: Run September 12 study publisher v6
+on:
+  push:
+    paths:
+      - '.github/workflows/run-sept12-publisher-v6.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and build report
+        run: python .tmp-azure-study-2026-09-12/publish_semantic_v3.py
+      - name: Commit validated report
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html docs/index.html docs/images/2026-09-12-08-00-*.svg docs/images/2026-09-12-08-00-*.drawio
+          git commit -m 'Publish September 12 Azure networking study report'
+          git push
