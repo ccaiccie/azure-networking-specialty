@@ -1,0 +1,30 @@
+name: Diagnose September 12 study payload
+on:
+  push:
+    paths:
+      - '.github/workflows/diagnose-sept12-payload.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode and inspect payload
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64,re,json,html
+          parts=sorted(Path('.tmp-azure-study-2026-09-12').glob('report.part*.b64'))
+          print('parts',len(parts),[p.name for p in parts])
+          payload=''.join(p.read_text().strip() for p in parts)
+          data=base64.b64decode(payload).decode('utf-8')
+          print('bytes',len(data.encode()))
+          lessons=re.findall(r'<section class="lesson"[^>]*>(.*?)</section>',data,re.S)
+          print('lessons',len(lessons))
+          print('lesson ids',re.findall(r'<section class="lesson" id="([^"]+)"',data))
+          print('h2s',[html.unescape(re.sub('<[^>]+>','',x)) for x in re.findall(r'<section class="lesson"[^>]*>.*?<h2>(.*?)</h2>',data,re.S)])
+          print('gradeAll', 'function gradeAll' in data, 'resetQuiz', 'function resetQuiz' in data, 'endhtml', '</html>' in data)
+          print('const questions',bool(re.search(r'const\s+questions\s*=',data)), 'const q',bool(re.search(r'const\s+q\s*=',data)))
+          print('diagram refs',re.findall(r'src="images/([^"]+\.svg)"',data)[:20])
+          print('bodycss',re.findall(r'body\s*\{[^}]+\}',data)[:1])
