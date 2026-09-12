@@ -1,0 +1,13 @@
+name: Diagnose September 12 quiz distribution
+on:
+  push:
+    paths:
+      - '.github/workflows/diagnose-sept12-quiz.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .tmp-azure-study-2026-09-12/quiz_diagnose.py
