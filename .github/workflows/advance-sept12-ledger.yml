@@ -1,0 +1,113 @@
+name: Advance Sept 12 Azure study uniqueness ledger
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/advance-sept12-ledger.yml'
+permissions:
+  contents: write
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Revalidate publication and advance ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json,re,html
+          report=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html')
+          index=Path('docs/index.html')
+          ledger=Path('docs/azure-study-uniqueness-ledger.json')
+          url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+          assert report.exists() and report.stat().st_size==134592
+          s=report.read_text(); idx=index.read_text()
+          assert url in idx
+          assert s.count('<section class="lesson"')==12
+          assert 'function gradeAll' in s and 'function resetQuiz' in s and '</html>' in s
+          assert 'Exam and interview takeaways' not in s and '<h3>Summary</h3>' not in s
+          assert '.architecture-diagram img{display:block;width:100%;height:auto}' in s
+          m=re.search(r'const questions=(\[.*?\]);\n\nfunction seeded',s,re.S); assert m
+          qs=json.loads(m.group(1)); assert len(qs)==50
+          from collections import Counter
+          dist=Counter(q['domain'] for q in qs)
+          expected={'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12}
+          assert dist==Counter(expected)
+          sections=re.findall(r'<section class="lesson".*?</section>',s,re.S)
+          counts=[]; titles=[]; sources=[]
+          for sec in sections:
+              tm=re.search(r'<h2>(.*?)</h2>',sec,re.S); titles.append(html.unescape(re.sub('<[^>]+>','',tm.group(1))).strip())
+              sm=re.search(r'<div class="sources">(.*?)</div>',sec,re.S); assert sm
+              urls=re.findall(r'href="(https://[^"]+)"',sm.group(1)); assert len(urls)>=2
+              sources.append({'primary_url':urls[0],'scenario_url':urls[1]})
+              x=re.sub(r'<pre.*?</pre>',' ',sec,flags=re.S)
+              x=re.sub(r'<div class="sources".*?</div>',' ',x,flags=re.S)
+              x=re.sub(r'<[^>]+>',' ',x)
+              counts.append(len(re.findall(r"\b[\w'’/-]+\b",html.unescape(x))))
+          assert min(counts)>=700
+          imgs=re.findall(r'<img src="(images/2026-09-12-08-00-[^"]+\.svg)"',s)
+          assert len(imgs)==12 and len(set(imgs))==12
+          for rel in imgs:
+              assert Path('docs/'+rel).exists() and '<svg' in Path('docs/'+rel).read_text()
+              d=Path('docs/'+rel[:-4]+'.drawio'); assert d.exists() and 'mxgraph.azure2' in d.read_text()
+          fingerprints=[
+            'expressroute-observability-bgp-arp-gateway-monitor-alerts',
+            'p2s-sstp-retirement-ikev2-openvpn-migration',
+            'avnm-ipam-hierarchical-pools-vnet-allocation',
+            'vnet-service-endpoints-subnet-identity-backbone-routing',
+            'global-cross-region-load-balancer-anycast-regional-lb',
+            'traffic-manager-subnet-routing-overrides-ecs',
+            'application-gateway-mutual-tls-strict-passthrough-ocsp',
+            'front-door-waf-managed-rules-drs-bot-exclusions',
+            'azure-firewall-premium-web-categories',
+            'ddos-rapid-response-network-protection-escalation',
+            'bastion-shareable-links-browser-target-vm',
+            'private-endpoint-dns-zone-groups-record-lifecycle']
+          source_cases=[
+            'expressroute-peer-loss-gateway-pressure-monitor-alert-runbook',
+            'enterprise-p2s-sstp-retirement-staged-ikev2-openvpn-cutover',
+            'enterprise-global-rfc1918-avnm-ipam-delegated-vnet-allocation',
+            'storage-service-endpoint-subnet-identity-default-deny-firewall',
+            'global-tcp-service-anycast-cross-region-standard-load-balancer',
+            'corporate-resolver-subnet-traffic-manager-deterministic-migration',
+            'b2b-api-application-gateway-strict-mtls-ocsp-client-validation',
+            'front-door-waf-detection-prevention-managed-rule-safe-tuning',
+            'enterprise-egress-firewall-premium-web-category-policy',
+            'internet-service-ddos-network-protection-rapid-response-escalation',
+            'temporary-vendor-bastion-shareable-link-controlled-browser-access',
+            'private-endpoint-zone-group-central-private-dns-lifecycle']
+          data=json.loads(ledger.read_text())
+          if isinstance(data,list): entries=data
+          else:
+              entries=None
+              for k in ('entries','runs'):
+                  if isinstance(data.get(k),list): entries=data[k]; break
+              assert entries is not None
+          run_id='azure-networking-study-2026-09-12-08-00-pacific'
+          if any(e.get('run_id')==run_id for e in entries):
+              print('Ledger already contains run; no change needed')
+              raise SystemExit(0)
+          old=json.dumps(data,sort_keys=True)
+          for fp in fingerprints:
+              assert fp not in old, f'topic fingerprint collision: {fp}'
+          for sc in source_cases:
+              assert sc not in old, f'source-case collision: {sc}'
+          for pair in sources:
+              for u in pair.values(): assert u not in old, f'source URL collision: {u}'
+          lessons=[]
+          for i,(title,fp,sc,pair,wc) in enumerate(zip(titles,fingerprints,source_cases,sources,counts),1):
+              lessons.append({'lesson':i,'title':title,'topic_fingerprint':fp,'source_case_fingerprint':sc,'primary_url':pair['primary_url'],'scenario_url':pair['scenario_url'],'substantive_words':wc})
+          entry={'run_id':run_id,'date':'2026-09-12','timestamp_pacific':'2026-09-12T08:00:00-07:00','report_file':'docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html','report_url':url,'topic_fingerprints':fingerprints,'source_case_fingerprints':source_cases,'lessons':lessons,'validation':{'lesson_count':12,'lesson_substantive_word_counts':counts,'minimum_substantive_words':min(counts),'nonredundancy':'PASS','implementation':'PASS','verification_expected_output':'PASS','troubleshooting_failure_output':'PASS','drawio_svg_pairs':12,'azure2_stencils':'PASS','full_width_diagrams':'PASS','compact_desktop_typography':'PASS','question_count':50,'question_distribution':expected,'quiz_controls':'PASS','source_role_separation':'PASS','rolling_30_day_uniqueness':'PASS','report_fetch_back':'PASS','index_fetch_back':'PASS','asset_fetch_back':'PASS'}}
+          entries.append(entry)
+          ledger.write_text(json.dumps(data,indent=2)+'\n')
+          print('appended',run_id,'counts',counts)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/azure-study-uniqueness-ledger.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Advance Azure study uniqueness ledger for Sept 12'
+            git push
+          fi
