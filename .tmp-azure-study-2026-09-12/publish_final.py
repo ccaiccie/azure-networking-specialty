@@ -4,7 +4,11 @@ lines=[]
 for line in src.splitlines():
     s=line.strip()
     indent=line[:len(line)-len(line.lstrip())]
-    if 'architecture diagram placement' in line and s.startswith('if not re.search'):
+    if s.startswith("data=base64.b64decode(payload).decode"):
+        lines.append(line)
+        lines.append(indent+"data=data.replace('https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods','https://learn.microsoft.com/en-us/azure/traffic-manager/tutorial-traffic-manager-subnet-routing')")
+        lines.append(indent+"data=data.replace('https://learn.microsoft.com/en-us/azure/firewall/premium-features','https://learn.microsoft.com/en-us/azure/firewall/web-categories')")
+    elif 'architecture diagram placement' in line and s.startswith('if not re.search'):
         lines.append(indent+"if not re.search(r'<h3>Architecture[^<]*</h3>.*?src=\"images/[^\"]+\\.svg\"',sec,re.S|re.I): raise SystemExit(f'L{n} architecture diagram placement')")
     elif 'full-width diagram css missing' in line and s.startswith('if not re.search'):
         lines.append(indent+"if not re.search(r'(?:figure\\.)?diagram[^\\{]*img\\s*\\{[^}]*width\\s*:\\s*100%',data,re.I): raise SystemExit('full-width diagram css missing')")
@@ -34,7 +38,7 @@ for line in src.splitlines():
         lines.append(indent+'core_source=[q for q in all_questions if q[\'domain\']==C]')
         lines.append(indent+'core=[q for q in core_source if q[\'lesson\'] in (3,4)][:13]')
         lines.append(indent+'route=[dict(q,domain=R) for q in core_source if q[\'lesson\']==5][:6]')
-        lines.append(indent+"tm='https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods'")
+        lines.append(indent+"tm='https://learn.microsoft.com/en-us/azure/traffic-manager/tutorial-traffic-manager-subnet-routing'")
         lines.append(indent+"route += [")
         lines.append(indent+" {'lesson':6,'domain':R,'text':'At what layer does Azure Traffic Manager make endpoint-selection decisions?','correct':'DNS','options':['DNS','TCP proxy','Layer-2 switching','BGP route reflection'],'explanation':'Traffic Manager is DNS-based global traffic distribution; it returns an endpoint and does not proxy the application flow.','source':tm},")
         lines.append(indent+" {'lesson':6,'domain':R,'text':'What is the purpose of Traffic Manager Subnet routing?','correct':'Map defined client IP ranges to specific endpoints','options':['Map defined client IP ranges to specific endpoints','Load-balance packets by five-tuple','Advertise VNet prefixes with BGP','Create private endpoints automatically'],'explanation':'Subnet routing lets a profile associate source IP ranges with preferred endpoints.','source':tm},")
