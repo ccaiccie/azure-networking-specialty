@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate and build report
-        run: python .tmp-azure-study-2026-09-12/publish_final_v2.py
+        run: python .tmp-azure-study-2026-09-12/publish_final.py
       - name: Commit validated report
         run: |
           set -euo pipefail
