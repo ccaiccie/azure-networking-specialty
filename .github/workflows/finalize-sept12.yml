@@ -1,0 +1,48 @@
+name: Finalize Sept 12 Azure study publication
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-sept12.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Final validation and cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json,re
+          report=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html')
+          index=Path('docs/index.html')
+          ledger=Path('docs/azure-study-uniqueness-ledger.json')
+          url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-12-08-00.html'
+          assert report.exists() and report.stat().st_size==134592
+          s=report.read_text(); assert s.count('<section class="lesson"')==12
+          assert 'function gradeAll' in s and 'function resetQuiz' in s and '</html>' in s
+          assert url in index.read_text()
+          q=re.search(r'const questions=(\[.*?\]);\n\nfunction seeded',s,re.S); assert q and len(json.loads(q.group(1)))==50
+          for i in range(1,13):
+              matches=list(Path('docs/images').glob(f'2026-09-12-08-00-L{i:02d}-*.svg')); assert len(matches)==1
+              svg=matches[0]; draw=svg.with_suffix('.drawio')
+              assert '<svg' in svg.read_text(); assert draw.exists() and 'mxgraph.azure2' in draw.read_text()
+          d=json.loads(ledger.read_text()); raw=json.dumps(d)
+          assert 'azure-networking-study-2026-09-12-08-00-pacific' in raw
+          assert 'rolling_30_day_uniqueness' in raw and 'report_fetch_back' in raw and 'asset_fetch_back' in raw
+          print('final validation PASS')
+          PY
+          rm -rf .tmp-azure-study-2026-09-12 .tmp-ledger-2026-09-12
+          rm -f .github/workflows/reconstruct-sept12-report.yml
+          rm -f .github/workflows/validate-index-sept12.yml
+          rm -f .github/workflows/advance-sept12-ledger.yml
+          rm -f .github/workflows/finalize-sept12.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Finalize Sept 12 Azure networking study publication'
+          git push
