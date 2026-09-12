@@ -10,6 +10,11 @@ for line in src.splitlines():
         lines.append(indent+"if not re.search(r'(?:figure\\.)?diagram[^\\{]*img\\s*\\{[^}]*width\\s*:\\s*100%',data,re.I): raise SystemExit('full-width diagram css missing')")
     elif s.startswith("mm=re.search(r'<figure class=\"diagram\">"):
         lines.append(indent+"mm=re.search(r'src=\"images/([^\"]+\\.svg)\"',sec,re.S|re.I)")
+    elif s.startswith("for token in ('Check answer','Finish and grade','Reset quiz'"):
+        lines.append(indent+"for token in ('Check answer','Finish and grade','function finishQuiz','function resetQuiz'):")
+    elif s.startswith("if token not in data: raise SystemExit(f'quiz control missing"):
+        lines.append(line)
+        lines.append(indent+"if not re.search(r'<button[^>]*(?:onclick=\"resetQuiz\\(\\)\"|id=\"reset[^\"]*\")[^>]*>\\s*Reset(?: quiz)?\\s*</button>',data,re.I): raise SystemExit('visible reset control missing')")
     elif s == 'questions=json.loads(m.group(1))':
         lines.append(indent+'raw_questions=m.group(1)')
         lines.append(indent+'buf=[]; in_string=False; escaped=False')
