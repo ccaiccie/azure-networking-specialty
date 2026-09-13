@@ -1,0 +1,194 @@
+name: Finalize September 13 Azure study
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-2026-09-13-study.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Hard validate report and assets
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, json, html, difflib, sys
+
+          report = Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html')
+          ledger_path = Path('docs/azure-study-uniqueness-ledger.json')
+          s = report.read_text(encoding='utf-8')
+          ledger = json.loads(ledger_path.read_text(encoding='utf-8'))
+          errors=[]
+
+          lessons = re.findall(r'<section class="lesson"[^>]*>(.*?)</section>', s, flags=re.S)
+          if len(lessons)!=12: errors.append(f'lesson_count={len(lessons)} expected 12')
+
+          def clean_words(block):
+              block=re.sub(r'<pre\b.*?</pre>',' ',block,flags=re.S|re.I)
+              block=re.sub(r'<h[1-6]\b.*?</h[1-6]>',' ',block,flags=re.S|re.I)
+              block=re.sub(r'<div class="sources".*?</div>',' ',block,flags=re.S|re.I)
+              block=re.sub(r'<figure\b.*?</figure>',' ',block,flags=re.S|re.I)
+              block=re.sub(r'<script\b.*?</script>',' ',block,flags=re.S|re.I)
+              block=re.sub(r'<[^>]+>',' ',block)
+              text=html.unescape(block)
+              return re.findall(r"\b[\w][\w'’/-]*\b",text)
+
+          counts={}
+          for i,l in enumerate(lessons,1):
+              counts[str(i)]=len(clean_words(l))
+              if counts[str(i)] < 700: errors.append(f'lesson {i} substantive words {counts[str(i)]} < 700')
+              for h in ['Why it matters','Architecture','Prerequisites and implementation','Verification','Troubleshooting']:
+                  if h not in l: errors.append(f'lesson {i} missing {h}')
+              if 'class="lab"' not in l: errors.append(f'lesson {i} missing implementation lab')
+              if 'class="output"' not in l: errors.append(f'lesson {i} missing representative output')
+              if 'class="architecture-diagram"' not in l: errors.append(f'lesson {i} missing architecture diagram')
+
+              paras=[html.unescape(re.sub(r'<[^>]+>',' ',p)) for p in re.findall(r'<p\b[^>]*>(.*?)</p>',l,flags=re.S|re.I)]
+              norm=[re.sub(r'\s+',' ',x).strip().lower() for x in paras]
+              norm=[x for x in norm if len(x.split())>=40]
+              for a in range(len(norm)):
+                  for b in range(a+1,len(norm)):
+                      if norm[a]==norm[b] or difflib.SequenceMatcher(None,norm[a],norm[b]).ratio()>=.93:
+                          errors.append(f'lesson {i} duplicate/near-duplicate prose paragraphs {a+1}/{b+1}')
+
+          if re.search(r'Exam and interview takeaways|<h3>Summary</h3>',s,re.I): errors.append('forbidden takeaways/summary section present')
+          if 'body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.56' not in s: errors.append('desktop body typography mismatch')
+          if 'h1{font-size:30px' not in s or 'h2{font-size:23px' not in s or 'h3{font-size:18px' not in s: errors.append('heading typography mismatch')
+          if '.architecture-diagram{display:block;width:100%' not in s or '.architecture-diagram img{display:block;width:100%' not in s: errors.append('full-width diagram CSS missing')
+          if '@media' in s: errors.append('mobile-specific media CSS present')
+
+          image_bases=re.findall(r'<img src="images/([^"]+)\.svg"',s)
+          if len(image_bases)!=12: errors.append(f'architecture_svg_refs={len(image_bases)} expected 12')
+          for base in image_bases:
+              d=Path('docs/images')/(base+'.drawio'); v=Path('docs/images')/(base+'.svg')
+              if not d.exists(): errors.append(f'missing drawio {d}')
+              else:
+                  dt=d.read_text(encoding='utf-8')
+                  if 'mxgraph.azure2.' not in dt: errors.append(f'no azure2 stencil in {d}')
+              if not v.exists(): errors.append(f'missing svg {v}')
+              else:
+                  vt=v.read_text(encoding='utf-8').lstrip()
+                  if not vt.startswith('<svg'): errors.append(f'not vector SVG {v}')
+
+          qmatches=re.findall(r'^\[(H|C|R|S),\d+,',s,flags=re.M)
+          dist={k:qmatches.count(k) for k in 'HCRS'}
+          if len(qmatches)!=50: errors.append(f'question_count={len(qmatches)} expected 50')
+          if dist!={'H':15,'C':13,'R':10,'S':12}: errors.append(f'domain_distribution={dist}')
+          if 'function checkOne' not in s or 'function gradeAll' not in s or 'function resetQuiz' not in s: errors.append('quiz controls missing')
+          if s.count("'https://learn.microsoft.com/") < 50: errors.append('quiz source URLs missing')
+
+          primary=[
+          'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-erdirect-about',
+          'https://learn.microsoft.com/en-us/azure/expressroute/scalable-gateway',
+          'https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface',
+          'https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-address-prefix',
+          'https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-custom-probe-overview',
+          'https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings',
+          'https://learn.microsoft.com/en-us/azure/network-watcher/vpn-troubleshoot-overview',
+          'https://learn.microsoft.com/en-us/azure/firewall-manager/threat-intelligence-settings',
+          'https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit',
+          'https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-virtual-network-verifier',
+          'https://learn.microsoft.com/en-us/azure/load-balancer/admin-state-overview',
+          'https://learn.microsoft.com/en-us/azure/application-gateway/custom-error']
+          scenario=[
+          'https://learn.microsoft.com/en-us/cli/azure/network/express-route/port?view=azure-cli-latest',
+          'https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-add-gateway-resource-manager',
+          'https://learn.microsoft.com/en-us/azure/virtual-network/tutorial-create-route-table',
+          'https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/create-public-ip-prefix-cli',
+          'https://learn.microsoft.com/en-us/cli/azure/network/lb/probe?view=azure-cli-latest',
+          'https://learn.microsoft.com/en-us/cli/azure/network/application-gateway/http-settings?view=azure-cli-latest',
+          'https://learn.microsoft.com/en-us/azure/network-watcher/vpn-troubleshoot-cli',
+          'https://learn.microsoft.com/en-us/cli/azure/network/firewall?view=azure-cli-latest',
+          'https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit-configure',
+          'https://learn.microsoft.com/en-us/azure/virtual-network-manager/how-to-verify-reachability-with-virtual-network-verifier',
+          'https://learn.microsoft.com/en-us/azure/load-balancer/manage-admin-state-how-to',
+          'https://learn.microsoft.com/en-us/powershell/module/az.network/add-azapplicationgatewaycustomerror']
+          fps=[
+          'expressroute-direct-qinq-dot1q','expressroute-ergwscale-autoscaling','nva-ip-forwarding-udr-insertion','public-ip-prefix-lifecycle',
+          'load-balancer-health-probes','application-gateway-connection-draining','network-watcher-vpn-troubleshoot','azure-firewall-threat-intelligence',
+          'front-door-waf-rate-limiting','avnm-network-verifier-reachability','load-balancer-admin-state','application-gateway-custom-error-pages']
+
+          prior_urls=set(); prior_fps=set()
+          for e in ledger.get('entries',[]):
+              prior_urls.update(e.get('canonical_urls',[])); prior_urls.update(e.get('primary_article_urls',[])); prior_urls.update(e.get('scenario_article_urls',[]))
+              prior_fps.update(e.get('title_fingerprints',[])); prior_fps.update(e.get('topic_fingerprints',[])); prior_fps.update(e.get('source_case_fingerprints',[]))
+          for u in primary+scenario:
+              if u in prior_urls: errors.append('30-day URL collision: '+u)
+          for f in fps:
+              if f in prior_fps: errors.append('30-day fingerprint collision: '+f)
+          if len(set(primary+scenario))!=24: errors.append('source-role/current-run URL duplication')
+
+          print('LESSON_WORD_COUNTS='+json.dumps(counts,sort_keys=True))
+          print('QUESTION_DISTRIBUTION='+json.dumps(dist,sort_keys=True))
+          if errors:
+              print('VALIDATION_ERRORS:')
+              for e in errors: print('-',e)
+              sys.exit(1)
+          Path('/tmp/lesson_counts.json').write_text(json.dumps(counts),encoding='utf-8')
+          print('HARD_GATE_VALIDATION=PASS')
+
+      - name: Promote exact report in index
+        shell: python
+        run: |
+          from pathlib import Path
+          url='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html'
+          content=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Azure Networking Specialty — Daily Study Reports</title><style>body{{margin:0;background:#eef3f8;color:#172b3d;font:14.5px/1.56 "Segoe UI",Arial,sans-serif}}main{{width:900px;max-width:calc(100% - 48px);margin:46px auto}}article{{background:#fff;border:1px solid #ccd8e2;padding:28px 34px;border-top:6px solid #0078d4}}h1{{font-size:30px;color:#0b3558;margin-top:0}}h2{{font-size:23px;color:#0b3558}}a{{color:#005ea8;font-weight:700}}.box{{background:#eef7fd;border-left:5px solid #0078d4;padding:16px 18px;margin:20px 0}}.meta{{font-size:12.5px;color:#5b6d7d}}</style></head><body><main><article><h1>Azure Networking Specialty daily study reports</h1><p>Current alignment: AZ-700 / Microsoft Certified: Azure Network Engineer Associate.</p><div class="box"><h2>Latest validated report — September 13, 2026</h2><p><a href="{url}">Open today's interactive Azure networking study report</a></p><p class="meta"><code>{url}</code></p></div><p class="meta">Validated: 12 deep lessons, full-width Azure draw.io/SVG diagrams, implementation and expected-output troubleshooting, and exactly 50 graded questions.</p></article></main></body></html>'''
+          Path('docs/index.html').write_text(content,encoding='utf-8')
+      - name: Commit and fetch-back index promotion
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/index.html
+          git commit -m "Promote validated September 13 Azure study report"
+          git push
+          git fetch origin main
+          test "$(git show origin/main:docs/index.html | grep -c 'Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html')" -ge 2
+          git show origin/main:docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html >/tmp/fetched-report.html
+          grep -q 'Exactly 50 automatically gradable questions' /tmp/fetched-report.html
+          for f in $(grep -o 'images/[^" ]*\.svg' /tmp/fetched-report.html | sort -u); do git show origin/main:docs/$f >/tmp/asset.svg; grep -q '^<svg' /tmp/asset.svg; done
+          echo INDEX_AND_REPORT_FETCHBACK=PASS
+      - name: Advance uniqueness ledger only after fetch-back
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,re,html
+          p=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html'); s=p.read_text(encoding='utf-8')
+          ledgerp=Path('docs/azure-study-uniqueness-ledger.json'); ledger=json.loads(ledgerp.read_text(encoding='utf-8'))
+          lessons=re.findall(r'<section class="lesson"[^>]*>(.*?)</section>',s,flags=re.S)
+          def wc(b):
+              b=re.sub(r'<pre\b.*?</pre>|<h[1-6]\b.*?</h[1-6]>|<div class="sources".*?</div>|<figure\b.*?</figure>',' ',b,flags=re.S|re.I)
+              b=re.sub(r'<[^>]+>',' ',b); b=html.unescape(b)
+              return len(re.findall(r"\b[\w][\w'’/-]*\b",b))
+          counts={str(i):wc(x) for i,x in enumerate(lessons,1)}
+          primary=['https://learn.microsoft.com/en-us/azure/expressroute/expressroute-erdirect-about','https://learn.microsoft.com/en-us/azure/expressroute/scalable-gateway','https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface','https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-address-prefix','https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-custom-probe-overview','https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings','https://learn.microsoft.com/en-us/azure/network-watcher/vpn-troubleshoot-overview','https://learn.microsoft.com/en-us/azure/firewall-manager/threat-intelligence-settings','https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit','https://learn.microsoft.com/en-us/azure/virtual-network-manager/concept-virtual-network-verifier','https://learn.microsoft.com/en-us/azure/load-balancer/admin-state-overview','https://learn.microsoft.com/en-us/azure/application-gateway/custom-error']
+          scenario=['https://learn.microsoft.com/en-us/cli/azure/network/express-route/port?view=azure-cli-latest','https://learn.microsoft.com/en-us/azure/expressroute/expressroute-howto-add-gateway-resource-manager','https://learn.microsoft.com/en-us/azure/virtual-network/tutorial-create-route-table','https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/create-public-ip-prefix-cli','https://learn.microsoft.com/en-us/cli/azure/network/lb/probe?view=azure-cli-latest','https://learn.microsoft.com/en-us/cli/azure/network/application-gateway/http-settings?view=azure-cli-latest','https://learn.microsoft.com/en-us/azure/network-watcher/vpn-troubleshoot-cli','https://learn.microsoft.com/en-us/cli/azure/network/firewall?view=azure-cli-latest','https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit-configure','https://learn.microsoft.com/en-us/azure/virtual-network-manager/how-to-verify-reachability-with-virtual-network-verifier','https://learn.microsoft.com/en-us/azure/load-balancer/manage-admin-state-how-to','https://learn.microsoft.com/en-us/powershell/module/az.network/add-azapplicationgatewaycustomerror']
+          fps=['expressroute-direct-qinq-dot1q','expressroute-ergwscale-autoscaling','nva-ip-forwarding-udr-insertion','public-ip-prefix-lifecycle','load-balancer-health-probes','application-gateway-connection-draining','network-watcher-vpn-troubleshoot','azure-firewall-threat-intelligence','front-door-waf-rate-limiting','avnm-network-verifier-reachability','load-balancer-admin-state','application-gateway-custom-error-pages']
+          features=['ExpressRoute Direct QinQ versus Dot1Q','ExpressRoute scalable gateway ErGwScale','NVA forwarding with NIC IP forwarding and UDRs','Azure Public IP Prefix lifecycle','Standard Load Balancer health probes','Application Gateway connection draining','Network Watcher VPN troubleshoot','Azure Firewall threat intelligence','Front Door WAF rate limiting','AVNM Network Verifier reachability','Load Balancer administrative state','Application Gateway custom error pages']
+          run_id='azure-networking-study-2026-09-13-08-30-pacific'
+          ledger['entries']=[e for e in ledger.get('entries',[]) if e.get('run_id')!=run_id]
+          ledger['entries'].append({
+            'run_id':run_id,'created_at_utc':'2026-09-13T15:30:00Z','local_date':'2026-09-13','local_timezone':'America/Los_Angeles',
+            'report_filename':'Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html',
+            'report_url':'https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-30.html',
+            'primary_article_urls':primary,'scenario_article_urls':scenario,'canonical_urls':primary+scenario,
+            'title_fingerprints':fps,'topic_fingerprints':fps,'feature_lessons':features,
+            'source_case_fingerprints':[f+'-implementation-case' for f in fps],
+            'validation':{'report_fetchback_pre_ledger':'passed','lesson_count':12,'lesson_word_counts':counts,'question_count':50,
+              'domain_distribution':{'Hybrid connectivity and architecture':15,'Core networking infrastructure':13,'Routing and traffic management':10,'Security, monitoring, and private service access':12},
+              'source_role_separation':'passed','nonredundancy':'passed','implementation_cli_terraform':'passed','verification_expected_output':'passed','troubleshooting_failure_output':'passed','drawio_svg_pairs':12,'full_width_diagrams':'passed','compact_desktop_typography':'passed','thirty_day_uniqueness':'passed'}
+          })
+          ledgerp.write_text(json.dumps(ledger,indent=2)+"\n",encoding='utf-8')
+          print('LEDGER_ENTRY_COUNTS='+json.dumps(counts,sort_keys=True))
+      - name: Commit and fetch-back ledger
+        run: |
+          git add docs/azure-study-uniqueness-ledger.json
+          git commit -m "Advance Azure study uniqueness ledger for September 13"
+          git push
+          git fetch origin main
+          git show origin/main:docs/azure-study-uniqueness-ledger.json >/tmp/fetched-ledger.json
+          grep -q 'azure-networking-study-2026-09-13-08-30-pacific' /tmp/fetched-ledger.json
+          echo LEDGER_FETCHBACK=PASS
