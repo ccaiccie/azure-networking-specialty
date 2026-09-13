@@ -1,9 +1,11 @@
 name: Generate Azure Networking Study 2026-09-13
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/generate-azure-study-2026-09-13.yml'
+      - 'tools/build_azure_2026_09_13.py'
 permissions:
   contents: write
 jobs:
@@ -37,7 +39,6 @@ jobs:
           for l in entry['lessons']:
               for key in ('primary_url','scenario_url'):
                   assert l[key] not in data, f'URL collision: {l[key]}'
-          # Later reports/workflows not yet represented in the ledger are also treated as blocked.
           later=[]
           for p in [Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html'),Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-11-08-00.html'),Path('.github/workflows/advance-sept12-ledger.yml')]:
               if p.exists(): later.append(p.read_text())
