@@ -1,0 +1,140 @@
+name: Generate Azure Networking Study 2026-09-13
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-azure-study-2026-09-13.yml'
+permissions:
+  contents: write
+jobs:
+  build-publish-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build report and run hard validation
+        run: |
+          set -euo pipefail
+          python tools/build_azure_2026_09_13.py
+      - name: Enforce 30-day uniqueness before publication
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          ledger=Path('docs/azure-study-uniqueness-ledger.json')
+          pending=Path('docs/.azure-ledger-entry-20260913.json')
+          data=ledger.read_text()
+          entry=json.loads(pending.read_text())
+          for fp in entry['topic_fingerprints']:
+              assert fp not in data, f'topic fingerprint collision: {fp}'
+          for sc in entry['source_case_fingerprints']:
+              assert sc not in data, f'source-case collision: {sc}'
+          for l in entry['lessons']:
+              for key in ('primary_url','scenario_url'):
+                  assert l[key] not in data, f'URL collision: {l[key]}'
+          # Later reports/workflows not yet represented in the ledger are also treated as blocked.
+          later=[]
+          for p in [Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-10-09-00.html'),Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-11-08-00.html'),Path('.github/workflows/advance-sept12-ledger.yml')]:
+              if p.exists(): later.append(p.read_text())
+          later='\n'.join(later)
+          for fp in entry['topic_fingerprints']:
+              assert fp not in later, f'collision with later published/intended material: {fp}'
+          for l in entry['lessons']:
+              assert l['primary_url'] not in later, f'primary URL reused in later material: {l["primary_url"]}'
+              assert l['scenario_url'] not in later, f'scenario URL reused in later material: {l["scenario_url"]}'
+          print('Uniqueness validation passed for 12 lessons and 24 source URLs')
+          PY
+      - name: Commit validated report, index, diagrams, and validation record
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html docs/index.html docs/images/2026-09-13-08-00-* docs/.azure-study-2026-09-13-validation.json
+          git commit -m 'Publish Azure Networking study for September 13'
+          git push
+      - name: Fetch back report, index, and every diagram asset
+        run: |
+          set -euo pipefail
+          BASE='https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main'
+          REPORT='docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html'
+          PAGES='https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html'
+          fetch_retry() {
+            url="$1"; out="$2"
+            for i in 1 2 3 4 5 6; do
+              if curl -fL --retry 2 --retry-delay 2 "$url" -o "$out"; then return 0; fi
+              sleep 5
+            done
+            return 1
+          }
+          fetch_retry "$BASE/$REPORT" /tmp/report.html
+          grep -q 'September 13, 2026' /tmp/report.html
+          test "$(grep -o '<section class="lesson"' /tmp/report.html | wc -l)" -eq 12
+          grep -q 'function gradeAll' /tmp/report.html
+          fetch_retry "$BASE/docs/index.html" /tmp/index.html
+          grep -Fq "$PAGES" /tmp/index.html
+          python - <<'PY'
+          import re,subprocess,pathlib
+          s=pathlib.Path('/tmp/report.html').read_text()
+          refs=re.findall(r'<img src="(images/2026-09-13-08-00-[^"]+\.svg)"',s)
+          assert len(refs)==12 and len(set(refs))==12, refs
+          base='https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/'
+          for i,rel in enumerate(refs,1):
+              svg=f'/tmp/a{i}.svg'; dio=f'/tmp/a{i}.drawio'
+              subprocess.run(['curl','-fL','--retry','4','--retry-delay','3',base+rel,'-o',svg],check=True)
+              subprocess.run(['curl','-fL','--retry','4','--retry-delay','3',base+rel[:-4]+'.drawio','-o',dio],check=True)
+              assert '<svg' in pathlib.Path(svg).read_text()
+              assert 'mxgraph.azure2' in pathlib.Path(dio).read_text()
+          print('Fetch-back passed for report, index, 12 SVGs, and 12 draw.io files')
+          PY
+      - name: Advance uniqueness ledger only after fetch-back
+        run: |
+          set -euo pipefail
+          git pull --ff-only
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          lp=Path('docs/azure-study-uniqueness-ledger.json')
+          ep=Path('docs/.azure-ledger-entry-20260913.json')
+          data=json.loads(lp.read_text()); entry=json.loads(ep.read_text())
+          if isinstance(data,list): entries=data
+          else:
+              entries=None
+              for k in ('entries','runs'):
+                  if isinstance(data.get(k),list): entries=data[k]; break
+              assert entries is not None
+          run_id=entry['run_id']
+          assert not any(e.get('run_id')==run_id for e in entries), 'run already exists unexpectedly'
+          old=json.dumps(data,sort_keys=True)
+          for fp in entry['topic_fingerprints']: assert fp not in old, fp
+          for sc in entry['source_case_fingerprints']: assert sc not in old, sc
+          for l in entry['lessons']:
+              assert l['primary_url'] not in old, l['primary_url']
+              assert l['scenario_url'] not in old, l['scenario_url']
+          entry['validation']['report_fetch_back']='PASS'
+          entry['validation']['index_fetch_back']='PASS'
+          entry['validation']['asset_fetch_back']='PASS'
+          entries.append(entry)
+          lp.write_text(json.dumps(data,indent=2)+'\n')
+          print('Appended',run_id)
+          PY
+          git add docs/azure-study-uniqueness-ledger.json
+          git commit -m 'Advance Azure study uniqueness ledger for September 13'
+          git push
+      - name: Fetch back ledger and confirm run
+        run: |
+          set -euo pipefail
+          URL='https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/azure-study-uniqueness-ledger.json'
+          for i in 1 2 3 4 5 6; do
+            if curl -fL --retry 2 --retry-delay 2 "$URL" -o /tmp/ledger.json && grep -q 'azure-networking-study-2026-09-13-08-00-pacific' /tmp/ledger.json; then
+              echo 'Ledger fetch-back passed'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Ledger fetch-back failed' >&2
+          exit 1
