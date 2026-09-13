@@ -1,0 +1,94 @@
+name: Finalize Azure Networking Study 2026-09-13
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/finalize_sep13.py'
+      - '.github/workflows/finalize-azure-study-2026-09-13.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run hard gates
+        id: validate
+        continue-on-error: true
+        run: |
+          python tools/finalize_sep13.py > /tmp/finalize.log 2>&1
+      - name: Publish diagnostic on hard-gate failure
+        if: steps.validate.outcome == 'failure'
+        run: |
+          cp /tmp/finalize.log docs/.azure-study-2026-09-13-hard-gate-failure.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/.azure-study-2026-09-13-hard-gate-failure.txt
+          git commit -m 'Record September 13 Azure study hard-gate failure' || true
+          git push
+          cat /tmp/finalize.log
+          exit 1
+      - name: Commit corrected sources and validation record
+        if: steps.validate.outcome == 'success'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html docs/.azure-study-2026-09-13-validation.json
+          git commit -m 'Finalize September 13 Azure study hard gates'
+          git push
+      - name: Fetch back published objects
+        if: steps.validate.outcome == 'success'
+        run: |
+          set -euo pipefail
+          git pull --ff-only
+          BASE='https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs'
+          curl -fL --retry 6 --retry-delay 3 "$BASE/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html" -o /tmp/report.html
+          curl -fL --retry 6 --retry-delay 3 "$BASE/index.html" -o /tmp/index.html
+          grep -q 'September 13, 2026' /tmp/report.html
+          grep -Fq 'https://ccaiccie.github.io/azure-networking-specialty/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html' /tmp/index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re,subprocess,json
+          s=Path('/tmp/report.html').read_text()
+          refs=re.findall(r'<img src="images/(2026-09-13-08-00-[^"]+\.svg)"',s)
+          assert len(refs)==12 and len(set(refs))==12
+          for i,n in enumerate(refs):
+              subprocess.run(['curl','-fL','--retry','5','--retry-delay','2',f'https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/images/{n}','-o',f'/tmp/{i}.svg'],check=True)
+              subprocess.run(['curl','-fL','--retry','5','--retry-delay','2',f'https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/images/{n[:-4]}.drawio','-o',f'/tmp/{i}.drawio'],check=True)
+              assert '<svg' in Path(f'/tmp/{i}.svg').read_text()
+              assert 'mxgraph.azure2' in Path(f'/tmp/{i}.drawio').read_text()
+          v=Path('docs/.azure-study-2026-09-13-validation.json')
+          d=json.loads(v.read_text());d['report_fetchback']='passed';d['index_fetchback']='passed';d['asset_fetchback']='passed';v.write_text(json.dumps(d,indent=2)+'\n')
+          PY
+      - name: Advance ledger after fetch-back
+        if: steps.validate.outcome == 'success'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json,re
+          vp=Path('docs/.azure-study-2026-09-13-validation.json'); validation=json.loads(vp.read_text())
+          rp=Path('docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html'); s=rp.read_text()
+          titles=re.findall(r'<section class="lesson".*?<h2>(.*?)</h2>',s,re.S)
+          blocks=re.findall(r'<div class="sources">(.*?)</div>',s,re.S)
+          sources=[re.findall(r'href="([^"]+)"',b) for b in blocks]
+          slugs=['expressroute-direct-qinq-dot1q','expressroute-ergwscale-autoscaling','nva-ip-forwarding-udr-insertion','public-ip-prefix-lifecycle','load-balancer-health-probes','application-gateway-connection-draining','network-watcher-vpn-troubleshoot','azure-firewall-threat-intelligence','front-door-waf-rate-limiting','avnm-network-verifier-reachability','load-balancer-admin-state','application-gateway-custom-error-pages']
+          lp=Path('docs/azure-study-uniqueness-ledger.json'); data=json.loads(lp.read_text()); entries=data['entries']
+          run_id='azure-networking-study-2026-09-13-08-00-pacific'
+          assert not any(e.get('run_id')==run_id for e in entries)
+          entry={'run_id':run_id,'created_at_utc':'2026-09-13T15:00:00Z','local_date':'2026-09-13','local_timezone':'America/Los_Angeles','report_filename':rp.name,'report_url':validation['report_url'],'primary_article_urls':[u[0] for u in sources],'scenario_article_urls':[u[1] for u in sources],'canonical_urls':[x for u in sources for x in u],'title_fingerprints':slugs,'topic_fingerprints':slugs,'feature_lessons':titles,'source_case_fingerprints':[x+'-implementation-verification-case' for x in slugs],'validation':validation}
+          entries.append(entry);lp.write_text(json.dumps(data,indent=2)+'\n')
+          PY
+          git add docs/Azure_Networking_Specialty_Daily_Study_Quiz_2026-09-13-08-00.html docs/.azure-study-2026-09-13-validation.json docs/azure-study-uniqueness-ledger.json
+          git commit -m 'Advance September 13 Azure study uniqueness ledger'
+          git push
+      - name: Fetch back ledger
+        if: steps.validate.outcome == 'success'
+        run: |
+          curl -fL --retry 6 --retry-delay 3 'https://raw.githubusercontent.com/ccaiccie/azure-networking-specialty/main/docs/azure-study-uniqueness-ledger.json' -o /tmp/ledger.json
+          grep -q 'azure-networking-study-2026-09-13-08-00-pacific' /tmp/ledger.json
